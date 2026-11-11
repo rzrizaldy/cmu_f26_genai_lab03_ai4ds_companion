@@ -124,6 +124,7 @@ table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px 8px;b
 .confetti{position:fixed;z-index:70;width:10px;height:10px;border-radius:3px;pointer-events:none;animation:confetti 1s cubic-bezier(.2,.7,.4,1) forwards}
 @media(max-width:820px){#deck{scroll-snap-type:y proximity}.slide{scroll-snap-stop:normal;padding:calc(var(--hdr) + 16px) 16px 70px;align-items:flex-start}.hero,.grid2,.grid3,.bandit,.missions{grid-template-columns:1fr}.phone{display:none}.jflow{grid-template-columns:1fr}.jarrow{transform:rotate(90deg);justify-self:center}.dots{display:none}.segs{max-width:none}.wordmark{font-size:16px}#counter{display:none}.rung{grid-template-columns:1fr 70px}.rung .track{grid-column:1/-1;grid-row:2}.lead{font-size:17px}.tile .big{font-size:28px}.film-stage,.film-bar{width:100%}}
 @media(prefers-reduced-motion:reduce){#deck{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.motion .slide .a{opacity:1}}
+@media(max-width:700px){#value-chain-cards{grid-template-columns:1fr!important}}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 2a1.6 1.6 0 0 1 1.6 1.6v.6a6.6 6.6 0 0 1 5 6.4v4l2 2.9V19H3.4v-1.5l2-2.9v-4a6.6 6.6 0 0 1 5-6.4v-.6A1.6 1.6 0 0 1 12 2zM9.3 20.3h5.4a2.7 2.7 0 0 1-5.4 0z"/></symbol>
@@ -149,8 +150,8 @@ table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px 8px;b
 <section class="slide m0" id="intro" data-label="Start"><div class="inner"><div class="hero"><div>
 <div class="kicker a">CMU · Generative AI Lab · Fall 2026</div>
 <h1 class="a">Which reminder should we send next?</h1>
-<p class="lead a">Real Duolingo logs. Gemma writes the code. You check it and decide.</p>
-<div class="ctas a"><button class="primary" type="button" data-go="film-slide">▶ Watch the 1-minute intro</button><button type="button" data-go="consumer">Skip to the data ↓</button></div>
+<p class="lead a">We read learner feedback, test a response, and keep watching. Gemma helps with code; Jev helps us interpret text.</p>
+<div class="ctas a"><button class="primary" type="button" data-go="film-slide">▶ Watch the 1-minute intro</button><button type="button" data-go="value-chain">Follow the feedback loop ↓</button></div>
 </div><div class="phone a" aria-hidden="true"><div class="phone-top"></div><div class="notice"><div class="push"><svg class="ic"><use href="#i-bell"/></svg><span>Practice reminder · now</span></div><div class="bell"><svg class="ic"><use href="#i-bell"/></svg></div><strong>Time for a quick lesson!</strong></div></div></div>
 <div class="missions a"><a href="#winner" data-go="winner"><span class="node g"><svg class="ic"><use href="#i-target"/></svg></span><span><b>Check the winner</b><small>Make the comparison fair</small></span></a><a href="#prediction" data-go="prediction"><span class="node b"><svg class="ic"><use href="#i-chart"/></svg></span><span><b>Improve the prediction</b><small>Train a model, challenge Jev</small></span></a><a href="#launch" data-go="launch"><span class="node o"><svg class="ic"><use href="#i-rocket"/></svg></span><span><b>Challenge the launch</b><small>Test the plan on later data</small></span></a></div>
 </div></section>
@@ -162,10 +163,12 @@ table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px 8px;b
 <div class="film-chapters" id="film-chapters"></div><p class="film-cap" id="film-cap" aria-live="polite"></p>
 </div></section>
 
+<section class="slide m0" id="value-chain" data-label="The feedback loop"><div class="inner"><div class="kicker a">AI across the data value chain</div><h2 class="a">Feedback becomes our next experiment</h2><div id="value-chain-cards" class="a" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px"></div><div class="tip a"><svg class="ic"><use href="#i-bulb"></use></svg><span>We connect the methods across separate historical sources. Review tags suggest questions; a controlled test checks a response. <a href="operations.html">Open the feedback operating room</a>.</span></div></div></section>
 <section class="slide m0" id="consumer" data-label="What learners see"><div class="inner">
 <div class="kicker a">Meet the data</div><h2 class="a">What learners see</h2>
+<div class="a" id="message-tabs" role="group" aria-label="Published message types" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>
 <div class="grid2 a" id="published-messages"></div>
-<div class="tip a"><svg class="ic"><use href="#i-bulb"/></svg><span>Real examples from the <a href="https://research.duolingo.com/papers/yancey.kdd20.pdf">Duolingo paper</a>. The logs don’t say which template ID (A–L) they are, so don’t match them up.</span></div>
+<div class="tip a"><svg class="ic"><use href="#i-bulb"/></svg><span>Published Duolingo messages. Each card has its source. These teaching categories help us picture the method; their A–L IDs are unknown.</span></div>
 <details class="fine a"><summary>Fine print · one real record</summary><p id="message-boundary"></p><div class="table-scroll"><table><thead><tr><th>Field</th><th>Value</th><th>Meaning</th></tr></thead><tbody id="authentic-row"></tbody></table></div></details>
 </div></section>
 
@@ -224,7 +227,7 @@ Show counts, rates, and uncertainty.</pre><h3>Gemma wrote</h3><pre>df[df.eligibl
 
 <section class="slide m2" id="text-slide" data-label="M2 · Give Jev text"><div class="inner">
 <div class="kicker a"><span class="dot"><svg class="ic"><use href="#i-chart"/></svg></span>Mission 2 · Review text</div>
-<h2 class="a">Give Jev words, and it wins</h2>
+<h2 class="a">What changes when we give Jev review text?</h2>
 <div class="card soft a"><p class="quote" id="review-excerpt"></p><p class="fine" id="review-example-result" style="margin:0"></p></div>
 <div class="grid3 a" style="margin-top:16px"><div class="tile p"><span class="big" id="k-jev">0.948</span><small>Jev AUC · 0 labels</small></div><div class="tile b"><span class="big" id="k-tfidf">0.927</span><small>Text model AUC · 7,999 labels</small></div><div class="tile g"><span class="big" id="k-mae">0.50 vs 0.75</span><small>star error · Jev vs Ridge</small></div></div>
 <div class="quiz a"><h3>A model predicts completion well. What follows?</h3><div class="opts"><button type="button" data-mission="prediction" data-answer="wrong">Its favorite template causes more lessons</button><button type="button" data-mission="prediction" data-answer="right">We still need to test a sending policy</button></div><div class="feedback" id="prediction-feedback" role="status"></div></div>
@@ -249,7 +252,7 @@ Show counts, rates, and uncertainty.</pre><h3>Gemma wrote</h3><pre>df[df.eligibl
 
 <section class="slide m3" id="watch" data-label="M3 · Keep watching"><div class="inner">
 <div class="kicker a"><span class="dot"><svg class="ic"><use href="#i-rocket"/></svg></span>Mission 3 · After launch</div>
-<h2 class="a">Keep watching the outcome</h2>
+<h2 class="a">Keep watching, then close the loop</h2><p class="a" style="font-size:17px">We can monitor completion, incoming feedback, and source quality. <a href="operations.html">Replay the feedback operating room →</a></p>
 <div class="card a"><svg id="daily" viewBox="0 0 750 210" role="img" aria-label="Daily lesson-within-2-hours rate in the later period" class="chart"></svg><p class="fine" style="margin:6px 0 0">Real daily rates. A dip is a question to investigate, not proof of a cause.</p></div>
 <div class="quiz a"><h3>What should the launch recommendation include?</h3><div class="opts"><button type="button" data-mission="launch" data-answer="wrong">A guaranteed retention lift</button><button type="button" data-mission="launch" data-answer="right">The estimate, its uncertainty, and a controlled test</button></div><div class="feedback" id="launch-feedback" role="status"></div></div>
 </div></section>
@@ -277,8 +280,19 @@ const D=window.LAB,$=id=>document.getElementById(id),pct=x=>(100*x).toFixed(1)+'
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;if(!reduced)document.documentElement.classList.add('motion');
 const names={base_rate:'Always the average',xgboost:'XGBoost · base',xgboost_engineered:'XGBoost · engineered',catboost:'CatBoost',jev:'Jev · zero labels'};
 const cell=(tr,t)=>{const td=document.createElement('td');td.textContent=t;td.style.overflowWrap='anywhere';tr.append(td)};
+// organization-wide loop: measured sketches plus explicit human decisions
+const O=D.operations,chain=[
+ ['Collect','Check arrivals and source quality.','Review arrivals',O.daily.map(r=>r.n)],
+ ['Structure','Turn text into ratings, probabilities, and draft tags.','Draft low-rating themes',Object.values(O.draft_topic_counts)],
+ ['Understand','Compare model outputs with held-out labels.','Measured review AUC',D.review_pilot.binary_metrics.filter(m=>['jev_noul','jev_score_low_mass'].includes(m.model)||m.model==='tfidf_logreg_'+D.review_pilot.train_rows).map(m=>m.roc_auc)],
+ ['Design a response','Consider a product fix, in-app copy, or external campaign.','Available message examples',[O.published_message_types,O.caption_records]],
+ ['Test','Define a comparison, then check later evidence.','Policy gap, percentage points',D.policy_ladder.map(r=>r.gap_pp)],
+ ['Monitor → learn','Set a threshold and explain the next check.','Observed low-rating share',O.daily.map(r=>r.low_rate)]
+];chain.forEach(([name,description,label,values])=>{const c=document.createElement('article');c.className='card';c.style.padding='12px 16px';const h=document.createElement('h3');h.style.fontSize='19px';h.style.margin='0 0 5px';h.textContent=name;const p=document.createElement('p');p.style.fontSize='14px';p.style.margin='0';p.textContent=description;const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 240 55');svg.style.width='100%';svg.style.height='48px';svg.setAttribute('aria-label',label);const max=Math.max(...values.map(Math.abs),.001);values.forEach((v,i)=>{const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');Object.entries({x:5+i*230/values.length,y:v>=0?28-v/max*23:28,width:Math.max(2,190/values.length),height:Math.max(2,Math.abs(v)/max*23),rx:2,fill:v<0?'#df7655':'#239c84'}).forEach(([k,val])=>rect.setAttribute(k,val));svg.append(rect)});const small=document.createElement('small');small.style.fontSize='11px';small.textContent=label;c.append(h,p,svg,small);$('value-chain-cards').append(c)});
 // meet the data
-D.published_messages.examples.forEach(m=>{const c=document.createElement('article');c.className='card msg';c.innerHTML='<small></small><h3></h3><p></p><small></small>';const [a,b,p,e]=c.children;a.textContent=m.name;b.textContent=m.title;p.textContent=m.body;e.textContent=m.eligibility;$('published-messages').append(c)});
+const messageGroups=[['Streak & travel',0],['Habit & goals',2],['Friends & practice',4]];
+function showMessages(start){$('published-messages').replaceChildren();D.published_messages.examples.slice(start,start+2).forEach(m=>{const c=document.createElement('article');c.className='card msg';const name=document.createElement('small');name.textContent=m.name;const title=document.createElement('h3');title.textContent=m.title;const body=document.createElement('p');body.textContent=m.body;const question=document.createElement('p');question.style.fontSize='15px';question.style.marginBottom='8px';question.textContent=m.analysis_question;const source=document.createElement('a');source.href=m.source||D.published_messages.source;source.textContent='Published source';source.style.fontSize='13px';c.append(name,title,body,question,source);$('published-messages').append(c)});document.querySelectorAll('#message-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.start)===start)))}
+messageGroups.forEach(([label,start])=>{const b=document.createElement('button');b.textContent=label;b.dataset.start=start;b.style.fontSize='13px';b.style.padding='8px 12px';b.onclick=()=>showMessages(start);$('message-tabs').append(b)});showMessages(0);
 $('message-boundary').textContent=D.published_messages.warning;
 const meanings={datetime:'Relative UTC day',ui_language:'App language (not the course)',eligible_templates:'Options for this send',selected_template:'What was sent',history:'Earlier sends and days since',session_end_completed:'Lesson within 2 hours'};
 Object.entries(D.authentic_row).forEach(([k,v])=>{const tr=document.createElement('tr');[k,typeof v==='object'?JSON.stringify(v):String(v),meanings[k]].forEach(t=>cell(tr,t));$('authentic-row').append(tr)});
