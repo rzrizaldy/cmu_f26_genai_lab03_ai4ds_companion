@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 03 guide · Notification Lab</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #fff; }
+  @media (prefers-color-scheme: dark) { body { background: #0d1117; } }
+  .markdown-body { box-sizing: border-box; max-width: 900px; margin: 0 auto; padding: 28px 16px 64px; font-family: Nunito, system-ui, sans-serif; font-size: 17px; }
+  .markdown-body h1, .markdown-body h2, .markdown-body h3 { font-weight: 900; }
+  .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 22px; font-weight: 900; }
+  .bar a { text-decoration: none; border: 2px solid #e5e5e5; border-bottom-width: 4px; border-radius: 12px; padding: 6px 12px; font-size: 14px; }
+  .bar a.here { background: #58cc02; border-color: #46a302; color: #fff; }
+  .logo { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: #58cc02; box-shadow: 0 3px 0 #46a302; margin-right: 4px; }
+</style>
+</head>
+<body><article class="markdown-body">
+<div class="bar"><span class="logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a1.6 1.6 0 0 1 1.6 1.6v.6a6.6 6.6 0 0 1 5 6.4v4l2 2.9V19H3.4v-1.5l2-2.9v-4a6.6 6.6 0 0 1 5-6.4v-.6A1.6 1.6 0 0 1 12 2zM9.3 20.3h5.4a2.7 2.7 0 0 1-5.4 0z"/></svg></span><a href="../">← Back to the slides</a><a href="../readme/" class="here">README</a><a href="../faq/" class="">FAQ</a></div>
+<h1 id="lab-03-which-reminder-should-we-send-next">Lab 03 · Which reminder should we send next?</h1>
+<p>Generative AI Lab · Fall 2026 · Friday 13 November 2026 · prepared by Rizaldy Utomo (TA)</p>
+<p>Today we play the notification team at a language app. We work with real Duolingo reminder logs and real app reviews. <strong>Gemma writes our code, Jev reads text for us, and we check everything before we decide.</strong> About 40 minutes, follow-along, with one open prompt of your own at the end.</p>
+<ul>
+<li>Companion slides (same story, runs in your browser): https://rzrizaldy.github.io/cmu_f26_genai_lab03_ai4ds_companion/</li>
+<li>This guide online: https://rzrizaldy.github.io/cmu_f26_genai_lab03_ai4ds_companion/readme/</li>
+<li>Common questions: https://rzrizaldy.github.io/cmu_f26_genai_lab03_ai4ds_companion/faq/</li>
+</ul>
+<h2 id="step-1-pick-where-to-run-it">Step 1: pick where to run it</h2>
+<h3 id="a-google-colab-easiest">A. Google Colab (easiest)</h3>
+<ol>
+<li>Download <code>lab03_starter.zip</code> from the link the TA shares, and unzip it. Keep the zip file too.</li>
+<li>Go to <a href="https://colab.research.google.com">colab.research.google.com</a>, choose <strong>File → Upload notebook</strong>, and pick <code>lab03_ai4ds.ipynb</code> from the unzipped folder.</li>
+<li>Run the first code cell. When it asks for a file, upload the original <code>lab03_starter.zip</code>. A normal CPU runtime is enough.</li>
+</ol>
+<p>We ran the notebook from the unzipped folder with no key and got zero errors. If Colab gives you trouble, switch to option B or ask in the Zoom chat.</p>
+<h3 id="b-your-own-laptop">B. Your own laptop</h3>
+<pre><code class="language-bash">pip install -r requirements.txt
+</code></pre>
+<p>Then open <code>lab03_ai4ds.ipynb</code> from the unzipped folder in Jupyter or VS Code.</p>
+<h2 id="step-2-a-gemini-key-optional">Step 2: a Gemini key (optional)</h2>
+<p>No key? No problem. Every example still runs, using Gemma answers we saved ahead of time.</p>
+<p>To try your own prompts, add a key named <code>GEMINI_API_KEY</code>:</p>
+<ul>
+<li><strong>Colab:</strong> click the 🔑 icon on the left, add the secret, and turn on notebook access.</li>
+<li><strong>Laptop:</strong> set it as an environment variable before you start Jupyter.</li>
+</ul>
+<p>Nobody needs a TypeSafe key. We ran Jev once and saved its answers.</p>
+<h2 id="what-we-do-in-40-minutes">What we do in 40 minutes</h2>
+<table>
+<thead>
+<tr>
+<th>Minutes</th>
+<th>Part</th>
+<th>What we learn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–7</td>
+<td>Setup and meet the data</td>
+<td>One row = one reminder sent; success = a lesson within 2 hours</td>
+</tr>
+<tr>
+<td>7–15</td>
+<td>Mission 1 · Check the winner</td>
+<td>Compare fairly, and catch Gemma's "runs but wrong" bug</td>
+</tr>
+<tr>
+<td>15–25</td>
+<td>Mission 2 · Improve the prediction</td>
+<td>XGBoost vs CatBoost vs Jev on logs, then on review text</td>
+</tr>
+<tr>
+<td>25–32</td>
+<td>Mission 3 · Challenge the launch</td>
+<td>Why a plan's promise shrinks, and how we test it offline (IPS)</td>
+</tr>
+<tr>
+<td>32–38</td>
+<td>Your turn</td>
+<td>Write your own Gemma prompt for one mission</td>
+</tr>
+<tr>
+<td>38–40</td>
+<td>Share</td>
+<td>One result, one recommendation, one limitation in chat</td>
+</tr>
+</tbody>
+</table>
+<h2 id="whats-in-the-zip">What's in the zip</h2>
+<ul>
+<li><code>lab03_ai4ds.ipynb</code>: the notebook we follow together</li>
+<li><code>duokit.py</code>, <code>gemma_client.py</code>: small helpers the notebook imports</li>
+<li><code>data/</code>: the sampled reminder logs, the review pilot, saved Gemma answers, and source notes</li>
+<li><code>companion/</code>: the slides and the feedback room, for offline use (open <code>companion/index.html</code>)</li>
+<li><code>FAQ.md</code>: the same questions as the online FAQ</li>
+</ul>
+<p>No API key is included anywhere in the package.</p>
+<h2 id="about-al-and-the-made-up-wording">About A–L and the made-up wording</h2>
+<p>The released logs only call the reminders A–L. Duolingo never published the text behind each ID. To make them easier to picture, we gave each one <strong>made-up</strong> wording, such as A "🔥 Your streak is on the line!" and G "Keep your streak going with a lesson." You'll see a 🎭 next to it. The numbers are real; the words are not, so please don't read the results as "urgent beats gentle".</p>
+<p>The message cards on the "What learners actually see" slide are different: those are real, published Duolingo messages, each linked to its source.</p>
+<h2 id="sources-and-licenses">Sources and licenses</h2>
+<ul>
+<li>Reminder logs: Kevin Yancey and Burr Settles (2020), <a href="https://doi.org/10.7910/DVN/23ZWVI">replication data</a>, Harvard Dataverse V1, CC BY-NC 4.0. Paper: <a href="https://doi.org/10.1145/3394486.3403351">KDD 2020</a>. We kept random samples of two original archives with all six original fields, and we added no rows.</li>
+<li>App reviews: <a href="https://www.kaggle.com/datasets/ganangsetyohadi/duolingo-google-play-reviews">Ganang Setyohadi, Duolingo Google Play Reviews</a>, April 2025, MIT. We share the 500 held-out reviews without names or images.</li>
+<li>Jev: <a href="https://typesafe.ai">TypeSafe AI</a> · <a href="https://docs.typesafe.ai/introduction">docs</a>.</li>
+</ul>
+<h2 id="what-these-data-cant-tell-us">What these data can't tell us</h2>
+<ul>
+<li>There is no "no reminder" group, so we can't say reminders beat silence.</li>
+<li>There are no user IDs, so our intervals can't account for the same learner showing up twice.</li>
+<li>Predicting who finishes a lesson doesn't tell us which reminder causes it.</li>
+<li>The reminder logs (2020) and the reviews (2025) come from different people and years. We connect the steps, not the learners.</li>
+</ul>
+<p>This is an unofficial teaching lab. It is not affiliated with or endorsed by Duolingo.</p>
+<hr><p><small>Unofficial teaching page for CMU's Generative AI Lab, prepared by Rizaldy Utomo. Not affiliated with or endorsed by Duolingo. Live version: <a href="https://rzrizaldy.github.io/cmu_f26_genai_lab03_ai4ds_companion/">https://rzrizaldy.github.io/cmu_f26_genai_lab03_ai4ds_companion/</a></small></p>
+</article></body></html>

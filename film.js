@@ -30,6 +30,8 @@
   const TXT = { tfidf: full ? full.roc_auc : .927, jev: jn ? jn.roc_auc : .948 };
   const LADDER = (D.policy_ladder || [{ gap_pp: 3.09 }, { gap_pp: .58 }, { gap_pp: -1.19 }]).map(r => r.gap_pp);
   const SENDS = (D.train_rows || 40000) + (D.test_rows || 15000);
+  const WORD = D.example_wording || {};
+  const wshort = k => (WORD[k] && WORD[k].short) || '';
 
   // ---------- easing and svg helpers
   const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
@@ -135,9 +137,9 @@
     const got = u > 6.6, hop = got ? Math.max(0, Math.sin(seg(u, 6.6, 7.4) * Math.PI)) * 34 : 0;
     const screen = got ? `<circle cx="0" cy="-8" r="12" fill="${K.green}"/>` : '';
     s += G(300, GROUND, learner(0, 0, u, { mood: got && u < 7.8 ? 'wow' : 'smile', hop, phone: screen }), { s: pop });
-    s += txt(650, 110, 'eligible reminders', 16, K.muted, 'middle', 800, seg(u, .8, 1.3) * (1 - seg(u, 6, 6.6)));
+    s += txt(650, 104, 'eligible reminders · 🎭 made-up wording', 16, K.muted, 'middle', 800, seg(u, .8, 1.3) * (1 - seg(u, 6, 6.6)));
     ['A', 'G', 'L'].forEach((k, i) => {
-      const x0 = 560 + i * 90, y0 = 180 + Math.sin(u * 2.4 + i) * 6, app = back(seg(u, .6 + i * .2, 1.2 + i * .2));
+      const x0 = 505 + i * 152, y0 = 180 + Math.sin(u * 2.4 + i) * 6, app = back(seg(u, .6 + i * .2, 1.2 + i * .2));
       const isG = i === 1, flip = seg(u, 4.6, 5.2), green = isG && flip > .5;
       const sx = isG ? Math.max(.03, Math.abs(Math.cos(flip * Math.PI))) : 1;
       if (isG && u > 5.4) {
@@ -147,13 +149,14 @@
       }
       const dim = !isG && u > 5 ? lerp(1, .35, seg(u, 5, 5.6)) : 1;
       s += card(x0, y0, k, green ? K.green : '#fff', green ? K.greenLip : K.grayLip, green ? '#fff' : K.ink, { sx: app * sx, sy: app, o: dim });
+      s += txt(x0, y0 + 74, wshort(k), 13, K.muted, 'middle', 800, clamp(app) * dim);
     });
     if (u > 1.8) {
       const r = seg(u, 1.8, 4.4), bounce = Math.abs(Math.sin(r * Math.PI * 3.5)) * (1 - r) * 110;
-      s += die(lerp(900, 700, easeOut(r)), 330 - bounce, r * 720, back(seg(u, 1.8, 2.2)));
-      s += txt(700, 395, 'random pick', 16, K.orangeLip, 'middle', 900, seg(u, 3.6, 4));
+      s += die(lerp(900, 720, easeOut(r)), 340 - bounce, r * 720, back(seg(u, 1.8, 2.2)));
+      s += txt(720, 405, 'random pick', 16, K.orangeLip, 'middle', 900, seg(u, 3.6, 4));
     }
-    if (got) s += bubble(330, 200 - hop, ['Time for a quick lesson!'], back(seg(u, 6.8, 7.4)), K.green, K.greenLip, '#fff', 18);
+    if (got) s += bubble(290, 200 - hop, [(WORD.G && WORD.G.text) || 'Time for a quick lesson!'], back(seg(u, 6.8, 7.4)), K.green, K.greenLip, '#fff', 17);
     return s;
   }
   function scene2(u) {
@@ -185,7 +188,7 @@
   function bar(x, h, w, fill, lipc, letter, value, o = 1, extra = {}) {
     if (h <= .5) return '';
     return G(x, GROUND, rr(-w / 2, -h, w, h, 16, fill) + rr(-w / 2, -16, w, 16, 0, lipc) + rr(-w / 2 + 12, -h + 12, 14, Math.max(0, h - 40), 7, 'rgba(255,255,255,.3)') +
-      txt(0, -h - 14, value, 19, K.ink) + (letter ? txt(0, 36, letter, 24, K.ink) : ''), { o, ...extra });
+      txt(0, -h - 14, value, 19, K.ink) + (letter ? txt(0, 36, letter, 24, K.ink) + txt(0, 58, wshort(letter), 13, K.muted, 'middle', 800) : ''), { o, ...extra });
   }
   function scene3(u) {
     let s = '';
@@ -202,7 +205,7 @@
     s += G(480, 100, lip(-190, -24, 380, 48, 24, '#f1f1f1', K.grayLip, 4) + rr(-186 + sw * 186, -20, 186, 40, 20, sw > .5 ? K.blue : '#fff') +
       txt(-93, 6, 'all sends', 16, sw > .5 ? K.muted : K.ink) + txt(93, 6, 'both eligible', 16, sw > .5 ? '#fff' : K.muted), { s: back(seg(u, 0, .5)) });
     s += G(140, GROUND, learner(0, 0, u, { mood: u > 7.6 && u < 9.4 ? 'wow' : 'smile' }), { s: .72 });
-    if (u > 9) s += chip(480, GROUND + 64, `A minus G: ${((SHARED.A - SHARED.G) * 100).toFixed(1)} pp · the interval crosses 0`, K.ink, '#222', back(seg(u, 9, 9.6)), 16);
+    if (u > 9) s += chip(480, GROUND + 88, `A minus G: ${((SHARED.A - SHARED.G) * 100).toFixed(1)} pp · the interval crosses 0`, K.ink, '#222', back(seg(u, 9, 9.6)), 16);
     return s;
   }
   function scene4(u) {

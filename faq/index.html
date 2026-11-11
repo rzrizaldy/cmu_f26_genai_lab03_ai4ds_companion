@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 03 FAQ · Notification Lab</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #fff; }
+  @media (prefers-color-scheme: dark) { body { background: #0d1117; } }
+  .markdown-body { box-sizing: border-box; max-width: 900px; margin: 0 auto; padding: 28px 16px 64px; font-family: Nunito, system-ui, sans-serif; font-size: 17px; }
+  .markdown-body h1, .markdown-body h2, .markdown-body h3 { font-weight: 900; }
+  .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 22px; font-weight: 900; }
+  .bar a { text-decoration: none; border: 2px solid #e5e5e5; border-bottom-width: 4px; border-radius: 12px; padding: 6px 12px; font-size: 14px; }
+  .bar a.here { background: #58cc02; border-color: #46a302; color: #fff; }
+  .logo { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: #58cc02; box-shadow: 0 3px 0 #46a302; margin-right: 4px; }
+</style>
+</head>
+<body><article class="markdown-body">
+<div class="bar"><span class="logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a1.6 1.6 0 0 1 1.6 1.6v.6a6.6 6.6 0 0 1 5 6.4v4l2 2.9V19H3.4v-1.5l2-2.9v-4a6.6 6.6 0 0 1 5-6.4v-.6A1.6 1.6 0 0 1 12 2zM9.3 20.3h5.4a2.7 2.7 0 0 1-5.4 0z"/></svg></span><a href="../">← Back to the slides</a><a href="../readme/" class="">README</a><a href="../faq/" class="here">FAQ</a></div>
+<h1 id="lab-03-faq">Lab 03 FAQ</h1>
+<p>Common questions about the lab. All numbers come from our own runs in November 2026 on fixed samples, so please treat small differences as hints, not laws.</p>
+<p><a href="#big-ideas">Big ideas</a> · <a href="#the-data">The data</a> · <a href="#gemma-and-jev">Gemma and Jev</a> · <a href="#troubleshooting">Troubleshooting</a></p>
+<h2 id="big-ideas">Big ideas</h2>
+<h3 id="why-isnt-the-tallest-bar-template-c-the-winner">Why isn't the tallest bar, template C, the winner?</h3>
+<p>C has the highest raw rate (about 40%), but in the earlier logs C was sent <strong>only</strong> when it was the single option a learner could get (575 sends, 1.4% of all sends). Nobody chose C over anything else, so its bar describes a special group of learners. It doesn't show that C works better.</p>
+<h3 id="why-do-we-compare-a-and-g-only-where-both-were-possible">Why do we compare A and G only where both were possible?</h3>
+<p>Duolingo picked at random <strong>among the reminders each learner was eligible for</strong>. Different templates reach different people, so raw rates mix up "which message" with "which learner". If we keep only sends where both A and G were on the table, the coin flip between them is fair. In that fair view, A gets 19.7% and G gets 22.7%. The gap is −3.0 points, but the 95% interval runs from −6.1 to +0.1, so there's no clear winner yet.</p>
+<h3 id="gemmas-code-ran-fine-what-was-wrong-with-it">Gemma's code ran fine. What was wrong with it?</h3>
+<p>It used <code>.str.contains("A")</code> on a column that holds <strong>lists</strong>, so it matched nothing and quietly returned an empty table. No error, no warning. Code that runs isn't automatically code that's right. We read the filter and check the counts every time.</p>
+<h3 id="why-does-jev-lose-on-the-send-logs-but-win-on-the-reviews">Why does Jev lose on the send logs but win on the reviews?</h3>
+<p>Our rule of thumb: <strong>could a person answer from one row?</strong></p>
+<ul>
+<li>A send log row is just IDs and numbers ("eligible A, G · sent G · 0.12 days"). There's nothing to read, and the signal only shows up as a pattern across thousands of rows. A trained model wins: XGBoost AUC 0.79 vs Jev 0.51.</li>
+<li>A review is words a person can read ("love it, but the ads…"). Jev, with zero labels, beats a text model trained on 7,999 labels: AUC 0.948 vs 0.927. It also guesses star ratings closer (average error 0.50 vs 0.75 stars).</li>
+</ul>
+<h3 id="what-is-ips-in-one-sentence">What is IPS, in one sentence?</h3>
+<p>We score a new plan only on the sends where it happens to agree with what was actually sent, and we give each match a weight equal to the number of options there were (3 options means a weight of 3).</p>
+<h3 id="why-does-our-plans-promise-shrink">Why does our plan's promise shrink?</h3>
+<p>The plan always picks the template with the best past rate. On the earlier data its own rate table promises +3.1 points over random. An honest IPS check on that same data gives +0.6, and on later data it lands at −1.2. When we pick the highest of many noisy estimates, we tend to pick the luckiest one. That's why we freeze a plan and test it on new data.</p>
+<h3 id="whats-a-bandit-and-why-should-we-care">What's a bandit, and why should we care?</h3>
+<p>A bandit keeps trying a mix of options so it keeps learning which one works. Duolingo's version is "sleeping" (some reminders aren't available for some sends) and "recovering" (a reminder feels fresh again after a break). Because it picks at random among eligible reminders, we can evaluate new plans offline with IPS.</p>
+<h2 id="the-data">The data</h2>
+<h3 id="are-the-al-messages-real">Are the A–L messages real?</h3>
+<p>The IDs are real; the wording on our slides is not. Duolingo never released the text behind A–L. We wrote <strong>made-up</strong> wording (marked 🎭) so the IDs are easier to picture. You can turn it off on the Mission 1 slide. The numbers are real, so please don't read the results as "urgent beats gentle".</p>
+<h3 id="then-what-are-the-message-cards-on-what-learners-actually-see">Then what are the message cards on "What learners actually see"?</h3>
+<p>Those are real Duolingo messages published in the paper or on Duolingo's blog, each linked to its source. We just can't tell which A–L ID, if any, they belong to.</p>
+<h3 id="are-the-reviewers-the-same-people-who-got-the-reminders">Are the reviewers the same people who got the reminders?</h3>
+<p>No. The reminder logs are from 2020 and the reviews are from 2025. They're separate public datasets. We use them to walk through one workflow, so we connect the steps, not the learners.</p>
+<h3 id="why-is-the-later-success-rate-165-so-much-higher-than-the-earlier-one-96">Why is the later success rate (16.5%) so much higher than the earlier one (9.6%)?</h3>
+<p>Time and sampling. The two periods come from different archives and different days. It isn't the effect of any campaign.</p>
+<h3 id="is-this-how-duolingo-actually-decides-what-to-send">Is this how Duolingo actually decides what to send?</h3>
+<p>Not exactly. Duolingo's real system is the bandit described in the <a href="https://doi.org/10.1145/3394486.3403351">KDD 2020 paper</a>. Our plan, LP and feedback room are simplified teaching versions built on their public data.</p>
+<h2 id="gemma-and-jev">Gemma and Jev</h2>
+<h3 id="whats-the-difference-between-gemma-and-jev">What's the difference between Gemma and Jev?</h3>
+<p>Gemma is a chat LLM: it writes <strong>text</strong>, like code and explanations, so we read what it writes. Jev is a judgment model from <a href="https://typesafe.ai">TypeSafe AI</a>: we give it something to read and a question, and it gives back a <strong>typed answer</strong>. That answer is a probability (Noul), a position on a scale (Score), or a category (Choice). Jev doesn't chat or write code.</p>
+<h3 id="couldnt-we-just-ask-gemma-for-a-probability">Couldn't we just ask Gemma for a probability?</h3>
+<p>We could, and it might type "0.7". But that's text we'd have to parse and then check for calibration ourselves. Jev returns the probability as a field, so we can score it next to XGBoost right away.</p>
+<h3 id="how-much-did-jev-cost">How much did Jev cost?</h3>
+<p>TypeSafe lists $42 per billion input tokens. Our 2,000 log rows cost about $0.06, and 500 reviews × 3 questions cost about $0.02.</p>
+<h3 id="are-jevs-review-topics-accurate">Are Jev's review topics accurate?</h3>
+<p>We don't know yet. Nobody has checked the Choice topic tags against human labels, so we treat them as drafts that tell us which reviews to read first.</p>
+<h3 id="can-i-tune-my-model-until-it-beats-the-test-set">Can I tune my model until it beats the test set?</h3>
+<p>Please don't. We fix our choices before we look at test results. If you want to tune, split off a validation set from the earlier data.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="my-own-prompt-shows-the-recorded-example-instead-of-a-new-answer">My own prompt shows the recorded example instead of a new answer</h3>
+<p>That means no Gemini key is connected. Add <code>GEMINI_API_KEY</code> (see the README, Step 2) and run the cell again. The recorded example is always labeled so you know which one you're seeing.</p>
+<h3 id="gemma-sometimes-fails-with-a-server-error">Gemma sometimes fails with a server error</h3>
+<p>The free API has short hiccups. The helper retries automatically; if it still fails, wait a few seconds and run the cell again.</p>
+<h3 id="colab-asks-me-to-upload-the-zip-again">Colab asks me to upload the zip again</h3>
+<p>Colab forgets files when the runtime restarts. Upload the original <code>lab03_starter.zip</code> again when the first cell asks.</p>
+<h3 id="the-companion-looks-plain-when-i-open-it-offline">The companion looks plain when I open it offline</h3>
+<p>Open <code>companion/index.html</code> from the unzipped folder. Everything works offline; only the rounded font needs internet, so the page falls back to a system font.</p>
+<hr><p><small>Unofficial teaching page for CMU's Generative AI Lab, prepared by Rizaldy Utomo. Not affiliated with or endorsed by Duolingo. Live version: <a href="https://rzrizaldy.github.io/cmu_f26_genai_lab03_ai4ds_companion/">https://rzrizaldy.github.io/cmu_f26_genai_lab03_ai4ds_companion/</a></small></p>
+</article></body></html>
