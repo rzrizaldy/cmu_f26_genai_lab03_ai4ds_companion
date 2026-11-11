@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The memo that promised $32k</title>
+<meta name="description" content="Lab 03 companion: an AI wrote the memo, you review it, claim by claim, in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Mono:wght@400;500&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+:root{
+  color-scheme: light;
+  --cream:#fff8e8; --paper:#fffdf4; --card:#ffffff; --ink:#173b39; --ink-deep:#10302d; --muted:#53716c;
+  --teal:#239c84; --teal-ink:#1f7f6b; --mint:#b0e8ce; --mint-soft:#dcf5e9; --aqua:#4ee1d2;
+  --gold:#d88a25; --gold-hi:#f2bd51; --coral:#df7655; --coral-soft:#fbe1d7; --gold-soft:#fdecc8;
+  --line:rgba(45,117,98,.30); --line-soft:rgba(45,117,98,.16); --dark:#173b39; --dark-2:#1f4a46; --on-dark:#eaf6f0;
+  --head:"Bricolage Grotesque",ui-rounded,system-ui,sans-serif; --body:"Manrope",system-ui,sans-serif; --mono:"DM Mono",ui-monospace,monospace;
+  --shadow:0 2px 0 var(--ink);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --cream:#0f2120; --paper:#132826; --card:#173230; --ink:#e7f4ee; --ink-deep:#ffffff; --muted:#9dbcb4;
+    --teal:#3fc3a6; --teal-ink:#6fd9c0; --mint:#1d4d43; --mint-soft:#183c35; --gold:#f2bd51; --gold-hi:#f7cf73;
+    --coral:#f08c6c; --coral-soft:#3b2620; --gold-soft:#3a2f17; --line:rgba(150,220,200,.28); --line-soft:rgba(150,220,200,.14);
+    --dark:#0a1716; --dark-2:#12302c; --on-dark:#eaf6f0; --shadow:0 2px 0 rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --cream:#0f2120; --paper:#132826; --card:#173230; --ink:#e7f4ee; --ink-deep:#ffffff; --muted:#9dbcb4;
+  --teal:#3fc3a6; --teal-ink:#6fd9c0; --mint:#1d4d43; --mint-soft:#183c35; --gold:#f2bd51; --gold-hi:#f7cf73;
+  --coral:#f08c6c; --coral-soft:#3b2620; --gold-soft:#3a2f17; --line:rgba(150,220,200,.28); --line-soft:rgba(150,220,200,.14);
+  --dark:#0a1716; --dark-2:#12302c; --on-dark:#eaf6f0; --shadow:0 2px 0 rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+a{color:var(--teal-ink)}
+code{font-family:var(--mono);font-size:.88em;background:var(--line-soft);padding:1px 5px;border-radius:5px}
+h1,h2,h3{font-family:var(--head);letter-spacing:-.02em;line-height:1.02;margin:0}
+h1{font-size:clamp(40px,7.4vw,82px);font-weight:800}
+h1 .two{color:var(--teal)}
+h2{font-size:clamp(28px,4.4vw,46px);font-weight:800}
+h3{font-size:22px;font-weight:750;margin:22px 0 8px}
+.eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:18px;color:var(--muted);max-width:680px}
+.pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+  border:1.5px solid var(--line);border-radius:999px;padding:5px 12px;background:var(--paper);color:var(--ink)}
+.pill .live{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 3px var(--mint)}
+.btn{font:600 14px var(--body);border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:999px;padding:9px 16px;cursor:pointer;box-shadow:var(--shadow);transition:transform .08s}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.gold{background:var(--gold-hi);color:#173b39}
+.btn.on{background:var(--ink);color:var(--cream)}
+.btn.small{font-size:13px;padding:6px 12px}
+.btn:disabled{opacity:.5}
+/* top bar */
+.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--cream) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft)}
+.topbar .wrap{display:flex;align-items:center;gap:18px;height:58px}
+.brand{font-family:var(--head);font-weight:800;font-size:22px;letter-spacing:-.03em;text-decoration:none;color:var(--ink)}
+.brand span{color:var(--teal)}
+.topnav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1}
+.topnav a{flex:none;text-decoration:none;color:var(--ink);font-size:14px;font-weight:600;padding:6px 10px;border-radius:999px}
+.topnav a:hover{background:var(--line-soft)}
+.topnav a .d{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--line);vertical-align:1px}
+.topnav a.holds .d{background:var(--teal)} .topnav a.wrong .d{background:var(--coral)} .topnav a.part .d{background:var(--gold)}
+#themeBtn{flex:none}
+/* hero */
+.hero{text-align:center;padding:56px 0 30px}
+.hero .lede{margin:22px auto 26px}
+.hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+/* blocks */
+.block{border:1.5px solid var(--ink);border-radius:28px;padding:28px;margin:0 0 26px;scroll-margin-top:72px;background:var(--paper);box-shadow:0 3px 0 var(--ink)}
+.block.mint{background:var(--mint-soft)}
+.block.dark{background:var(--dark);color:var(--on-dark);border-color:var(--dark)}
+.block.dark .eyebrow,.block.dark .muted{color:#a9cfc4}
+.block.dark .pill{background:transparent;color:var(--on-dark);border-color:#2f6a62}
+.block.dark code{background:rgba(255,255,255,.1)}
+.bhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.muted{color:var(--muted)}
+.quote{font-family:var(--head);font-size:clamp(20px,2.6vw,26px);font-weight:600;line-height:1.25;margin:14px 0 18px;padding-left:18px;border-left:5px solid var(--gold-hi)}
+.grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px}
+.block.dark .panel{background:var(--dark-2);border-color:#2f6a62}
+.answer{display:none;margin-top:16px;border-radius:18px;padding:16px 18px;background:var(--dark);color:var(--on-dark)}
+.block.dark .answer{background:var(--cream);color:#173b39}
+.answer.show{display:block;animation:pop .35s ease}
+@keyframes pop{from{transform:translateY(6px);opacity:0}to{transform:none;opacity:1}}
+.answer .tag{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-hi)}
+.block.dark .answer .tag{color:var(--gold)}
+.answer .big{font-family:var(--head);font-weight:800;font-size:24px;line-height:1.15;margin:4px 0 6px}
+.stamp{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:2px;font-style:normal}
+.stamp.holds{background:var(--mint);color:#16433e} .stamp.wrong{background:var(--coral);color:#fff} .stamp.part{background:var(--gold-hi);color:#173b39}
+.num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--gold-hi);color:#173b39;font:700 12px var(--mono);border:1.5px solid var(--ink);flex:none}
+.howto{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px}
+.howto li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
+@media (max-width:620px){.kpis{grid-template-columns:1fr}}
+.kpi{border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;background:var(--card)}
+.block.dark .kpi{background:var(--dark-2);border-color:#2f6a62}
+.kpi .v{font-family:var(--head);font-weight:800;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12.5px;color:var(--muted);margin-top:4px}
+.kpi.promise .v{color:var(--teal)} .kpi.deliver .v{color:var(--coral)}
+canvas,svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.block.dark svg text{fill:#a9cfc4}
+select,input[type=number]{font:600 14px var(--body);padding:8px 10px;border-radius:12px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--teal)}
+label.chk{display:inline-flex;gap:7px;align-items:center;margin:4px 14px 4px 0;font-weight:600;cursor:pointer}
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.5;background:var(--dark);color:#d8efe7;border-radius:14px;padding:14px;overflow:auto;margin:10px 0}
+pre mark{background:var(--coral);color:#fff;border-radius:3px;padding:0 2px}
+details summary{cursor:pointer;font-weight:700;color:var(--teal-ink)}
+.block.dark details summary{color:var(--gold-hi)}
+/* memo */
+.memo{background:var(--card);border:1.5px solid var(--ink);border-radius:20px;padding:22px 24px;box-shadow:0 3px 0 var(--ink);position:relative}
+.memo .from{font-family:var(--mono);font-size:12px;color:var(--muted);border-bottom:1px dashed var(--line);padding-bottom:10px;margin-bottom:12px;display:grid;gap:2px}
+.memo .subject{font-family:var(--head);font-weight:750;font-size:22px;margin-bottom:10px}
+.memo ol{list-style:none;padding:0;margin:12px 0;counter-reset:c}
+.memo li{counter-increment:c;display:flex;gap:12px;padding:10px;border-radius:14px;cursor:pointer;border:1.5px dashed transparent}
+.memo li::before{content:counter(c);flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gold-hi);border:1.5px solid var(--ink);font:700 12px var(--mono);color:#173b39}
+.memo li:hover{border-color:var(--gold);background:var(--gold-soft)}
+.poll{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px}
+/* claim 1 waffles */
+.waffles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:620px){.waffles{grid-template-columns:1fr}}
+.waffle{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.waffle i{aspect-ratio:1;border-radius:3px;background:var(--line-soft)}
+.waffle i.on{background:var(--teal)} .waffle.mens i.on{background:var(--teal)} .waffle.womens i.on{background:var(--gold)} .waffle.none i.on{background:var(--muted)}
+.wlabel{font-family:var(--head);font-weight:750;font-size:18px;margin:8px 0 0}
+.wval{font-family:var(--head);font-weight:800;font-size:30px}
+/* claim 3 tickets */
+.tickets{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+.ticket{border:1.5px dashed #2f6a62;border-radius:14px;padding:10px;min-height:84px;background:var(--dark-2);position:relative;overflow:hidden;font-size:12.5px}
+.ticket .who{font-weight:700;color:var(--on-dark)}
+.ticket .p{font-family:var(--mono);margin-top:6px;color:#a9cfc4;opacity:0;transition:opacity .3s}
+.ticket.scratched .p{opacity:1}
+.ticket .foil{position:absolute;inset:auto 8px 8px 8px;height:24px;border-radius:8px;background:repeating-linear-gradient(45deg,#2f6a62 0 6px,#28605a 6px 12px);transition:opacity .3s}
+.ticket.scratched .foil{opacity:0}
+.ticket.win{border-style:solid;border-color:var(--gold-hi);background:#2a4a2c}
+.ticket.win .p{color:var(--gold-hi);font-weight:600}
+.ticket.pick{outline:2.5px solid var(--gold-hi);outline-offset:2px}
+.bigstat{font-family:var(--head);font-weight:800;font-size:56px;line-height:1;color:var(--gold-hi)}
+/* claim 5 */
+.rows{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:700px){.rows{grid-template-columns:1fr}}
+.review{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px;font-size:15px}
+.review .stars{color:var(--gold);letter-spacing:2px}
+.trow{font-family:var(--mono);font-size:12.5px;display:grid;grid-template-columns:auto auto;gap:4px 14px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px}
+.guess{margin-top:8px;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:14px}
+.gcard{perspective:900px;min-height:210px}
+.gcard .in{position:relative;width:100%;height:100%;min-height:210px;transition:transform .5s;transform-style:preserve-3d}
+.gcard.flipped .in{transform:rotateY(180deg)}
+.gcard .face{position:absolute;inset:0;backface-visibility:hidden;border:1.5px solid var(--ink);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--card);box-shadow:0 3px 0 var(--ink)}
+.gcard .back{transform:rotateY(180deg);background:var(--mint-soft)}
+.gcard.miss .back{background:var(--coral-soft)}
+.gcard .q{font-family:var(--head);font-weight:700;font-size:17px;line-height:1.2}
+.gcard .d{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.gcard .r{font-size:13px}
+.gcard .win{font-family:var(--head);font-weight:800;font-size:18px}
+.rule{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+@media (max-width:700px){.rule{grid-template-columns:1fr}}
+.rule > div{border-radius:18px;padding:16px;border:1.5px solid var(--ink)}
+.rule .yes{background:var(--mint-soft)} .rule .no{background:var(--gold-soft)}
+.rule b{font-family:var(--head);font-size:19px;display:block;margin-bottom:4px}
+/* ops */
+.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+@media (max-width:760px){.timeline{grid-template-columns:1fr 1fr}}
+.tstep{border:1.5px solid var(--line);border-radius:16px;padding:12px;background:var(--card);font-size:13.5px}
+.tstep .t{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.tstep b{font-family:var(--head);font-size:17px;display:block;margin:2px 0}
+.tstep.bad{border-color:var(--coral);background:var(--coral-soft)}
+.shot{border-radius:16px;border:1.5px solid var(--ink);overflow:hidden;box-shadow:0 3px 0 var(--ink);margin-top:10px}
+.shot img{display:block;width:100%;height:auto}
+.caption{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:8px}
+table.t{border-collapse:collapse;width:100%;font-size:15px}
+table.t td,table.t th{padding:10px 8px;border-bottom:1px dashed var(--line);text-align:left;vertical-align:top}
+table.t th{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase}
+.band{background:var(--dark);color:var(--on-dark);border-radius:28px;padding:36px 32px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin:10px 0 26px}
+.band h2{color:var(--on-dark)}
+footer{font-size:13px;color:var(--muted);padding:6px 0 50px;border-top:1px solid var(--line-soft)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-2px}
+.mdbox{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:12px 18px;max-height:340px;overflow:auto;font-size:14.5px}
+.mdbox h3{font-size:17px;margin:12px 0 4px}
+.mdbox p{margin:6px 0}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand" href="#top">lab<span>03</span></a>
+  <nav class="topnav" id="nav">
+    <a href="#how"><span class="d"></span>How it worked</a>
+    <a href="#memo"><span class="d"></span>Memo</a>
+    <a href="#c1" data-c="1"><span class="d"></span>1 · Test</a>
+    <a href="#c2" data-c="2"><span class="d"></span>2 · Controls</a>
+    <a href="#c3" data-c="3"><span class="d"></span>3 · Subgroup</a>
+    <a href="#c4" data-c="4"><span class="d"></span>4 · The $32k</a>
+    <a href="#c5" data-c="5"><span class="d"></span>5 · AI vs ML</a>
+    <a href="#ops"><span class="d"></span>Launch day</a>
+    <a href="#signoff"><span class="d"></span>Sign-off</a>
+  </nav>
+  <button class="btn small" id="themeBtn" type="button" aria-label="Switch light or dark">◐</button>
+</div></div>
+
+<main class="wrap" id="top">
+
+<section class="hero">
+  <span class="pill"><span class="live"></span>Lab 03 · AI for Data Science · Fri 13 Nov 2026</span>
+  <h1 style="margin-top:20px">Gemma wrote the memo.<br><span class="two">You find the itch.</span></h1>
+  <p class="lede">A clothing shop emailed 64,000 past customers at random. A junior analyst ran the numbers with AI help, and Gemma wrote the recommendation: five confident claims and a $32k promise. Check each one before you sign.</p>
+  <div class="cta">
+    <a class="btn gold" href="#how">Start the review ↓</a>
+    <button class="btn" id="resetBtn" type="button">Start over</button>
+  </div>
+</section>
+
+<!-- HOW THE EXPERIMENT WORKED -->
+<section class="block dark" id="how">
+  <div class="bhead"><span class="eyebrow">00 · How the experiment worked</span><span class="pill">real data · Hillstrom 2008</span></div>
+  <h2>One coin flip per customer, then two weeks of waiting.</h2>
+  <p class="muted" id="howCaption" style="min-height:48px;font-size:17px;margin:12px 0"></p>
+  <canvas id="howCanvas" height="330" aria-label="Animation: customers split into three groups, emails sent, visitors and buyers light up"></canvas>
+  <div class="toolbar"><button class="btn small" id="howReplay" type="button">▶ Replay</button><span class="legend"><span><i style="background:#4f7d75"></i>1 dot = 100 customers</span><span><i style="background:var(--aqua)"></i>visited the site</span><span><i style="background:var(--gold-hi)"></i>bought something</span></span></div>
+</section>
+
+<!-- MEMO -->
+<section class="block" id="memo">
+  <div class="bhead"><span class="eyebrow">01 · The memo</span><span class="pill">written by Gemma 4 · real output</span></div>
+  <div class="grid2">
+    <div class="memo" id="memoBox"></div>
+    <div>
+      <h3 style="margin-top:0">Your first verdict</h3>
+      <p class="muted">Vote before you check anything. You will vote again at the end.</p>
+      <div class="poll" id="poll"><button class="btn" data-v="sign" type="button">Sign</button><button class="btn" data-v="changes" type="button">Sign with changes</button><button class="btn" data-v="reject" type="button">Reject</button></div>
+      <ul class="howto">
+        <li><span class="num">1</span><span>Squad A (born Jan–Apr) checks claim 1, Squad B (May–Aug) claim 2, Squad C (Sep–Dec) claim 3.</span></li>
+        <li><span class="num">2</span><span>Everyone does claim 4 with their own birthday, and votes on the claim 5 cards.</span></li>
+        <li><span class="num">3</span><span>Click any claim in the memo to jump to its check.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CLAIM 1 -->
+<section class="block mint" id="c1">
+  <div class="bhead"><span class="eyebrow">Claim 1 · statistical test</span><span class="pill">Squad A · born Jan–Apr</span></div>
+  <h2>Did the Mens email work?</h2>
+  <p class="quote" data-claim="1"></p>
+  <div class="toolbar" id="c1Out">
+    <button class="btn small on" data-o="visit" type="button">Visited the site</button>
+    <button class="btn small" data-o="conversion" type="button">Bought something</button>
+  </div>
+  <div class="waffles" id="waffles"></div>
+  <p class="muted" id="c1Note" style="margin-top:12px"></p>
+  <button class="btn gold" data-reveal="1" type="button">Reveal the verdict</button>
+  <div class="answer" id="v1"><div class="tag">Answer · holds</div><div class="big">Yes: +7.7 points in visits, about +$0.77 per customer.</div>
+    The split is fine (each group got about a third, SRM p = 0.90). The 95% range for spend is $0.49 to $1.06. With 21,000 people per group almost anything is "significant", so the size and the range are the numbers to report. Spend is $0 for 99% of people, which is why the t-test, Mann-Whitney and a bootstrap answer slightly different questions.</div>
+</section>
+
+<!-- CLAIM 2 -->
+<section class="block" id="c2">
+  <div class="bhead"><span class="eyebrow">Claim 2 · econometrics</span><span class="pill">Squad B · born May–Aug</span></div>
+  <h2>Which controls belong in the model?</h2>
+  <p class="quote" data-claim="2"></p>
+  <div class="grid2">
+    <div class="panel"><svg id="dag" viewBox="0 0 520 250" role="img" aria-label="Email causes a visit, a visit causes spend"></svg>
+      <div class="toolbar"><button class="btn on" id="gateBtn" type="button">Control for visit: ON</button></div></div>
+    <div>
+      <p>Emails were assigned <b>at random</b>, so comparing the groups is already causal. The analyst added controls. Turning on <code>visit</code> means: compare only people who all visited, or all didn't.</p>
+      <div id="c2Checks"><span class="muted" style="font-size:13px">other controls:</span>
+        <label class="chk"><input type="checkbox" value="recency" checked> recency</label>
+        <label class="chk"><input type="checkbox" value="history" checked> log(history)</label>
+        <label class="chk"><input type="checkbox" value="newbie" checked> newbie</label></div>
+      <svg id="c2Bars" viewBox="0 0 460 130" role="img" aria-label="Estimated email effect"></svg>
+    </div>
+  </div>
+  <button class="btn gold" data-reveal="2" type="button" style="margin-top:12px">Reveal the verdict</button>
+  <div class="answer" id="v2"><div class="tag">Answer · wrong</div><div class="big">Visit is the road the email travels on. Blocking it hides the effect.</div>
+    With <code>visit</code> in the model the Mens effect is $0.22; without it, $0.77. Visiting happens <i>after</i> the email and partly <i>because of</i> it, so it is a <b>bad control</b>. Every control has to be measured before the treatment. The other three controls barely move anything, which is what randomization buys you.</div>
+</section>
+
+<!-- CLAIM 3 -->
+<section class="block dark" id="c3">
+  <div class="bhead"><span class="eyebrow">Claim 3 · multiple testing</span><span class="pill">Squad C · born Sep–Dec</span></div>
+  <h2>A winning subgroup, or a winning lottery ticket?</h2>
+  <p class="quote" data-claim="3"></p>
+  <div class="grid2">
+    <div>
+      <p>The analyst ran the same test (Womens email vs no email, on buying) in <b>18 subgroups</b> and reported the best one. Each ticket is one test.</p>
+      <div class="tickets" id="tickets"></div>
+      <div class="toolbar"><button class="btn gold small" id="scratch" type="button">Scratch all 18</button><button class="btn small" id="bonfBtn" type="button">Use the corrected cutoff</button></div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow">If the email did nothing anywhere</div>
+      <div class="bigstat" style="margin:8px 0">60%</div>
+      <p style="margin:0">chance that at least one of 18 tests still looks "significant" at p &lt; 0.05. That's 1 − 0.95<sup>18</sup>.</p>
+      <p class="muted" id="c3Note" style="margin-top:12px"></p>
+    </div>
+  </div>
+  <button class="btn gold" data-reveal="3" type="button" style="margin-top:12px">Reveal the verdict</button>
+  <div class="answer" id="v3"><div class="tag">Answer · a hypothesis for now</div><div class="big">The ticket might be real, but the memo hid how many were bought.</div>
+    Urban / Web / new customers still passes the Bonferroni cutoff (0.05 / 18 = 0.0028), so it may be a real effect. The memo never said 18 groups were compared. A target found by searching should be tested again in the next campaign before budget moves to it.</div>
+</section>
+
+<!-- CLAIM 4 -->
+<section class="block mint" id="c4">
+  <div class="bhead"><span class="eyebrow">Claim 4 · optimization</span><span class="pill">everyone · use your birthday</span></div>
+  <h2>Will 20,000 emails really bring $32k?</h2>
+  <p class="quote" data-claim="4"></p>
+  <h3>Step 1 · Gemma's formulation. What's missing?</h3>
+  <div class="mdbox" id="lpBox"></div>
+  <details style="margin-top:8px"><summary>Show the missing piece</summary><p>The task said each email costs $0.10, but the objective only adds up uplift. With the cost included, a segment whose uplift is below $0.10 loses money. Our solver includes it.</p></details>
+  <h3>Step 2 · Plan on half the customers, check on the other half</h3>
+  <div class="toolbar">
+    <span class="muted">Your birthday</span><select id="bdMonth" aria-label="Birth month"></select><select id="bdDay" aria-label="Birth day"></select>
+    <button class="btn small on" data-use="point" type="button">Trust the estimates</button>
+    <button class="btn small" data-use="low" type="button">Plan on the low end</button>
+  </div>
+  <div class="kpis">
+    <div class="kpi promise"><div class="v" id="kPromise">–</div><div class="l">promised, from half A's estimates</div></div>
+    <div class="kpi deliver"><div class="v" id="kDeliver">–</div><div class="l">delivered on half B (new customers)</div></div>
+    <div class="kpi"><div class="v" id="kRandom">–</div><div class="l">Mens email to 20,000 random customers</div></div>
+  </div>
+  <p id="c4Chat" style="font-size:15px"></p>
+  <div class="grid2">
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:6px">Why it shrinks · extra spend per email, by segment</div>
+      <svg id="segBars" viewBox="0 0 560 420" role="img" aria-label="Segment uplift on half A vs half B"></svg>
+      <div class="legend"><span><i style="background:var(--mint)"></i>half A (used to plan)</span><span><i style="background:var(--teal)"></i>half B (new customers)</span><span><i style="background:var(--gold-hi);border:1.5px solid var(--ink)"></i>picked by the plan</span></div>
+    </div>
+    <div>
+      <ul class="howto" style="margin-top:0">
+        <li><span class="num">1</span><span>The optimizer ranks segments by half A's numbers and sends to the best ones.</span></li>
+        <li><span class="num">2</span><span>Some of those numbers were high by luck (a few big spenders landed in half A).</span></li>
+        <li><span class="num">3</span><span>On half B, the picked segments come out lower. <b id="segSummary"></b></span></li>
+      </ul>
+      <div class="panel" style="margin-top:14px">
+        <div class="eyebrow" style="margin-bottom:6px">Every birthday in class</div>
+        <svg id="scatter" viewBox="0 0 420 330" role="img" aria-label="Promised vs delivered for 366 birthdays"></svg>
+        <div class="legend"><span><i style="background:var(--teal)"></i>one birthday</span><span><i style="background:var(--coral)"></i>yours</span><span>dashed: delivered = promised</span></div>
+      </div>
+    </div>
+  </div>
+  <button class="btn gold" data-reveal="4" type="button" style="margin-top:14px">Reveal the verdict</button>
+  <div class="answer" id="v4"><div class="tag">Answer · the promise is too big</div><div class="big">The plan delivers about half of what it promises, in <span id="v4share">97%</span> of birthdays.</div>
+    Planning "carefully" on the low end makes the promise smaller, but it still delivers about half of it. The optimizer picks segments whose estimates were lucky, so only fresh data tells you what a plan is worth. The plan still beats emailing 20,000 random customers. Next time, keep a random holdout group in the send to measure it.</div>
+</section>
+
+<!-- CLAIM 5 -->
+<section class="block" id="c5">
+  <div class="bhead"><span class="eyebrow">Claim 5 · classic ML vs an off-the-shelf AI</span><span class="pill">everyone · vote first</span></div>
+  <h2>Can JEV replace our own model?</h2>
+  <p class="quote" data-claim="5"></p>
+  <p>JEV (TypeSafe) reads a record and answers a yes/no question with a probability, with no training at all. Before the cards, try being the model:</p>
+  <div class="rows">
+    <div><div class="eyebrow" style="margin-bottom:6px">Row A · a review</div>
+      <div class="review"><div class="stars">★★☆☆☆ hidden</div>"Love the color but it runs two sizes small and the fabric is see-through. Sending it back."</div>
+      <div class="guess">Would this reviewer recommend it? <span class="stamp holds">easy: no</span></div></div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Row B · a customer</div>
+      <div class="trow"><span>months since last order</span><span>6</span><span>spent last year</span><span>$180.70</span><span>bought</span><span>Mens items</span><span>area · channel</span><span>Urban · Web</span><span>email received</span><span>Mens</span></div>
+      <div class="guess">Will this customer visit the site? <span class="stamp part">no idea</span></div></div>
+  </div>
+  <p style="margin-top:16px">Five real tasks. Pick a winner on each card, then it flips. <b id="score"></b></p>
+  <div class="cards" id="cards"></div>
+  <div class="rule">
+    <div class="yes"><b>Could a person answer from one row?</b>Then the knowledge is in language and common sense, and JEV already has it. Use it with no labels, calibrate it with a few, or let it label data for a small free model.</div>
+    <div class="no"><b>Does it need patterns from many rows?</b>Then the signal lives in <i>your</i> data, and only training finds it. Use classic ML (XGBoost, CatBoost).</div>
+  </div>
+  <button class="btn gold" data-reveal="5" type="button" style="margin-top:14px">Reveal the verdict</button>
+  <div class="answer" id="v5"><div class="tag">Answer · wrong for this task</div><div class="big">On these customers JEV scores like a coin flip (AUC 0.52).</div>
+    XGBoost trained on 42,194 customers reaches 0.61. Keep our own model for customers, and use JEV for text such as reviews and complaints, where it beat a model trained on 22,134 labels.</div>
+</section>
+
+<!-- OPS -->
+<section class="block dark" id="ops">
+  <div class="bhead"><span class="eyebrow">Operations · launch day</span><span class="pill">synthetic website data · same campaign</span></div>
+  <h2>Tuesday, 9 a.m. The email goes out.</h2>
+  <div class="timeline">
+    <div class="tstep"><div class="t">Tue 09:00</div><b>Email sent</b>20,000 inboxes, Mens email.</div>
+    <div class="tstep"><div class="t">Tue 10:00</div><b>The rush</b>Sessions jump from ~200 to over 3,000 an hour.</div>
+    <div class="tstep bad"><div class="t">Tue 19:00</div><b>Checkout breaks</b>Payment gateway times out: up to 32% of checkouts fail.</div>
+    <div class="tstep"><div class="t">Tue 22:00</div><b>Fixed</b>About <span id="lostTxt">$21k</span> of sales lost in 3 hours.</div>
+  </div>
+  <p>Gemma was asked for an alert rule. Pick the metric and the threshold the on-call engineer gets paged on.</p>
+  <div class="toolbar">
+    <button class="btn small on" data-m="sessions" type="button">Alert on traffic (sessions)</button>
+    <button class="btn small" data-m="err" type="button">Alert on failed checkouts (%)</button>
+  </div>
+  <div class="panel"><svg id="opsChart" viewBox="0 0 900 300" role="img" aria-label="Hourly website metric for the campaign week"></svg>
+    <div style="margin-top:8px"><label class="muted" for="thr">Page someone when it goes above <b id="thrV"></b></label><input type="range" id="thr"></div></div>
+  <div class="kpis">
+    <div class="kpi"><div class="v" id="oAlerts">–</div><div class="l">pages in the week</div></div>
+    <div class="kpi"><div class="v" id="oCaught">–</div><div class="l">checkout outage caught?</div></div>
+    <div class="kpi"><div class="v" id="oOther">–</div><div class="l">pages about something else</div></div>
+  </div>
+  <details open><summary>Gemma's alert rule (look at the highlighted line)</summary><pre id="alertCode"></pre>
+    <p class="muted" style="font-size:14.5px">It flags any hour where <code>incident == True</code>. That column exists only because we labeled the week afterwards, so the rule is reading the answer, the same leak as <code>spend</code>. The rest of its rule, "error rate above twice the 24-hour average", also fires on 19 quiet hours with error rates around 1%.</p></details>
+  <h3>The same week in a real Grafana dashboard</h3>
+  <div class="shot"><img src="img/grafana_dashboard.jpg" alt="Grafana dashboard: sessions spike after the email, checkout error rate spikes to 32% on Tuesday evening, about $21k lost" loading="lazy" width="2800" height="2220"></div>
+  <div class="caption">Screenshot of Grafana 11.3 running locally with this week's data (TestData source). Orange zone: the traffic rule. Red zone: the failed-checkout rule at 10%.</div>
+  <button class="btn gold" data-reveal="6" type="button" style="margin-top:16px">Reveal the verdict</button>
+  <div class="answer" id="v6"><div class="tag">Answer · watch customer pain, and know the calendar</div><div class="big">The traffic alert pages you for the campaign and sleeps through the outage.</div>
+    An alert on failed checkouts above 10% catches the outage and nothing else all week. The AI can write a rule in seconds; knowing that a campaign is running, which number measures customer pain, and which columns you will not have in real time is the team's job.</div>
+</section>
+
+<!-- SIGN-OFF -->
+<section class="block mint" id="signoff">
+  <div class="bhead"><span class="eyebrow">Sign-off</span><span class="pill">post in the Zoom chat</span></div>
+  <h2>"Send to ___, promise $___, because ___."</h2>
+  <div class="poll" id="poll2"><span class="muted">Your verdict now:</span><button class="btn" data-v="sign" type="button">Sign</button><button class="btn" data-v="changes" type="button">Sign with changes</button><button class="btn" data-v="reject" type="button">Reject</button><b id="pollCompare"></b></div>
+  <h3>The corrected memo</h3>
+  <table class="t">
+    <tr><th>#</th><th>Corrected claim</th><th>Status</th></tr>
+    <tr><td><span class="num">1</span></td><td>The Mens email works: +7.7 points in visits, about +$0.77 per customer (95% range $0.49 to $1.06).</td><td><span class="stamp holds">holds</span></td></tr>
+    <tr><td><span class="num">2</span></td><td>Drop the $0.22. <code>visit</code> is caused by the email, so controlling for it hides most of the effect.</td><td><span class="stamp wrong">wrong</span></td></tr>
+    <tr><td><span class="num">3</span></td><td>Urban / Web / new is a hypothesis from 18 tests. Test it again before moving budget.</td><td><span class="stamp part">hypothesis</span></td></tr>
+    <tr><td><span class="num">4</span></td><td>Expect about half the promise: on new customers, plans like this delivered a median 52%. Keep a random holdout group. And alert on failed checkouts: an outage on launch night cost about $21k.</td><td><span class="stamp wrong">too big</span></td></tr>
+    <tr><td><span class="num">5</span></td><td>Keep our own model for customers (JEV: AUC 0.52 here). Use JEV for text like reviews.</td><td><span class="stamp wrong">wrong here</span></td></tr>
+  </table>
+  <h3>Five questions for any AI-assisted analysis</h3>
+  <ul class="howto">
+    <li><span class="num">1</span><span>Who is in the data, and does anything look too clean or too odd?</span></li>
+    <li><span class="num">2</span><span>Was the treatment random, and was every control measured before it?</span></li>
+    <li><span class="num">3</span><span>How many tests or versions were tried before this one?</span></li>
+    <li><span class="num">4</span><span>Has the number been checked on data the plan has never seen?</span></li>
+    <li><span class="num">5</span><span>Could a person answer this from one row, or does it need patterns from many rows?</span></li>
+  </ul>
+</section>
+
+<div class="band"><h2>Don't sign blind.</h2><a class="btn gold" href="#top">Back to the top ↑</a></div>
+
+<footer>
+  Data: Kevin Hillstrom, <a href="https://blog.minethatdata.com/2008/03/minethatdata-e-mail-analytics-and-data.html">MineThatData E-Mail Analytics Challenge</a> (2008) ·
+  <a href="https://www.kaggle.com/datasets/nicapotato/womens-ecommerce-clothing-reviews">Women's E-Commerce Clothing Reviews</a> (Kaggle, CC0) · launch-day website data is synthetic.
+  Models: Gemma 4 on the Gemini API, JEV 1.14 (TypeSafe). Generative AI Lab, Fall 2026 · prepared by Rizaldy Utomo (TA). Everything runs in your browser; nothing is sent anywhere.
+</footer>
+</main>
+
+<script src="bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+(() => {
+const D = window.LAB3;
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("lab3:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("lab3:" + k, JSON.stringify(v)); } catch (e) {} }
+};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const money = v => (v < 0 ? "−$" : "$") + Math.abs(Math.round(v)).toLocaleString("en-US");
+const SVGNS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs = {}, text) => { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; };
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+// ---------- tiny markdown ----------
+function inline(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|[^*])\*([^*\s][^*]*?)\*/g, "$1<i>$2</i>").replace(/`([^`]+)`/g, "<code>$1</code>"); }
+function md(text) {
+  const out = []; let list = null; const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
+  for (const raw of text.split("\n")) { const line = raw.trimEnd(); let m;
+    if (!line.trim()) { close(); continue; }
+    if ((m = line.match(/^#{1,4}\s+(.*)/))) { close(); out.push(`<h3>${inline(m[1])}</h3>`); continue; }
+    if ((m = line.match(/^\s*(\d+)\.\s+(.*)/))) { if (list !== "ol") { close(); out.push(`<ol start="${m[1]}">`); list = "ol"; } out.push(`<li>${inline(m[2])}</li>`); continue; }
+    if ((m = line.match(/^\s*[*-]\s+(.*)/))) { if (list !== "ul") { close(); out.push("<ul>"); list = "ul"; } out.push(`<li>${inline(m[1])}</li>`); continue; }
+    if (line.trim().startsWith("$$")) { close(); out.push(`<p>${esc(line)}</p>`); continue; }
+    close(); out.push(`<p>${inline(line)}</p>`); }
+  close(); return out.join("");
+}
+
+// ---------- verdict state ----------
+const STATUS = {1: ["holds", "holds"], 2: ["wrong", "wrong"], 3: ["part", "hypothesis"], 4: ["wrong", "too big"], 5: ["wrong", "wrong here"]};
+const claims = {}; let subject = "", intro = [], outro = [];
+for (const l of D.memo.split("\n").filter(l => l.trim())) {
+  const m = l.match(/^\s*\**(\d)\.\**\s+(.*)/);
+  if (m) claims[m[1]] = m[2].replace(/\*\*/g, "");
+  else if (!subject && /subject/i.test(l)) subject = l.replace(/\*\*/g, "").replace(/^#+\s*/, "").replace(/^Subject:\s*/i, "");
+  else if (!Object.keys(claims).length) intro.push(l); else outro.push(l);
+}
+function renderMemo() {
+  const r = store.get("revealed", {});
+  $("#memoBox").innerHTML = `<div class="from"><span>FROM · junior analyst (drafted by Gemma 4)</span><span>TO · marketing director</span></div>
+    <div class="subject">${inline(subject)}</div>${intro.map(l => `<p>${inline(l)}</p>`).join("")}
+    <ol>${[1,2,3,4,5].map(i => `<li data-go="${i}"><span>${inline(claims[i] || "")}${r[i] ? `<span class="stamp ${STATUS[i][0]}">${STATUS[i][1]}</span>` : ""}</span></li>`).join("")}</ol>
+    ${outro.map(l => `<p>${inline(l)}</p>`).join("")}`;
+  $$("#memoBox li").forEach(li => li.onclick = () => location.hash = "#c" + li.dataset.go);
+  $$(".quote[data-claim]").forEach(q => q.textContent = "“" + (claims[q.dataset.claim] || "") + "”");
+  $$("#nav a[data-c]").forEach(a => { a.className = r[a.dataset.c] ? STATUS[a.dataset.c][0] : ""; });
+  $$(".answer").forEach(v => v.classList.toggle("show", !!r[v.id.slice(1)]));
+}
+$$("[data-reveal]").forEach(b => b.onclick = () => { const r = store.get("revealed", {}); r[b.dataset.reveal] = true; store.set("revealed", r); renderMemo(); });
+function poll(id, key) {
+  const box = $(id);
+  const paint = () => { const v = store.get(key, null); $$("button", box).forEach(b => b.classList.toggle("on", b.dataset.v === v));
+    const a = store.get("poll1", null), z = store.get("poll2", null), nm = {sign: "Sign", changes: "Sign with changes", reject: "Reject"};
+    const pc = $("#pollCompare"); if (pc) pc.textContent = a && z ? (a === z ? `Same as at the start.` : `You moved from “${nm[a]}” to “${nm[z]}”.`) : ""; };
+  $$("button", box).forEach(b => b.onclick = () => { store.set(key, b.dataset.v); paint(); }); paint();
+}
+
+// ---------- 00 · experiment animation ----------
+const how = { t0: 0, raf: 0 };
+function sizeCanvas(c) { const r = c.getBoundingClientRect(), dpr = devicePixelRatio || 1; c.width = r.width * dpr; c.height = parseInt(c.getAttribute("height")) * dpr; c.style.height = c.getAttribute("height") + "px"; return dpr; }
+const HOW_STEPS = ["64,000 past customers who bought something in the last year.",
+  "A coin flip puts each one into a group: Mens email, Womens email, or no email.",
+  "Two groups get an email on the same day. The third group gets nothing, so it shows what would have happened anyway.",
+  "Two weeks later: who visited the site (blue) and who bought (gold)? The difference between the groups is the effect of the email."];
+function howDraw() {
+  const c = $("#howCanvas"), Wc = c.getBoundingClientRect().width;
+  { const cw = Wc / 3, cs = Math.max(10, Math.min(18, Math.floor((cw - 30) / 11))), ce = Math.min(11, (cw - 30) / cs);
+    c.setAttribute("height", Math.round(72 + Math.ceil(225 / cs) * ce + 64)); }
+  const dpr = sizeCanvas(c), ctx = c.getContext("2d"), W = c.width / dpr, H = c.height / dpr;
+  const N = 640, R = rng(7), groups = [], dots = [];
+  for (let i = 0; i < N; i++) dots.push({ x0: W / 2 + (R() - .5) * W * .6, y0: 70 + R() * Math.max(60, H - 160), g: Math.floor(R() * 3) });
+  const counts = [0, 0, 0]; dots.forEach(d => d.k = counts[d.g]++);
+  const names = ["Mens email", "Womens email", "No email"], arms = ["mens", "womens", "none"];
+  const visitN = arms.map((a, g) => Math.round(counts[g] * D.arms[a].visit)), buyN = arms.map((a, g) => Math.max(1, Math.round(counts[g] * D.arms[a].conversion)));
+  const colW = W / 3, cols = Math.max(10, Math.min(18, Math.floor((colW - 30) / 11))), cell = Math.min(11, (colW - 30) / cols);
+  dots.forEach(d => { const cx = d.g * colW + (colW - cols * cell) / 2, row = Math.floor(d.k / cols);
+    d.x1 = cx + (d.k % cols) * cell + cell / 2; d.y1 = 72 + row * cell; d.visit = d.k < visitN[d.g]; d.buy = d.k < buyN[d.g]; });
+  // shuffle which dots are visitors so they don't sit in the first rows
+  [0, 1, 2].forEach(g => { const ds = dots.filter(d => d.g === g), R2 = rng(11 + g); for (let i = ds.length - 1; i > 0; i--) { const j = Math.floor(R2() * (i + 1)); [ds[i].visit, ds[j].visit] = [ds[j].visit, ds[i].visit]; [ds[i].buy, ds[j].buy] = [ds[j].buy, ds[i].buy]; } });
+  cancelAnimationFrame(how.raf); how.t0 = performance.now();
+  const ease = t => t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t);
+  function frame(now) {
+    const t = reduced ? 99 : (now - how.t0) / 1000;
+    const step = t < 1.4 ? 0 : t < 3.6 ? 1 : t < 6 ? 2 : 3;
+    $("#howCaption").textContent = HOW_STEPS[step];
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    const move = ease((t - 1.4) / 1.8);
+    ctx.font = "700 15px 'Bricolage Grotesque', sans-serif"; ctx.textAlign = "center";
+    if (t > 1.6) names.forEach((n, g) => { ctx.globalAlpha = ease((t - 1.6) / .6); ctx.fillStyle = "#eaf6f0"; ctx.fillText(n, g * colW + colW / 2, 52); ctx.globalAlpha = 1; });
+    dots.forEach(d => {
+      const x = d.x0 + (d.x1 - d.x0) * move, y = d.y0 + (d.y1 - d.y0) * move;
+      let col = "#4f7d75"; const lit = ease((t - 6.2 - (d.k % 40) * .02) / .5);
+      if (lit > 0 && d.visit) col = lit > .5 ? "#4ee1d2" : "#4f7d75";
+      if (lit > 0 && d.buy) col = lit > .5 ? "#f2bd51" : col;
+      ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, (d.buy && lit > .5) ? cell * .55 : cell * .36, 0, 7); ctx.fill();
+    });
+    // envelopes
+    if (t > 3.8 && t < 6.4) [0, 1].forEach(g => { for (let e = 0; e < 5; e++) { const p = ease((t - 3.8 - e * .18) / 1.2); if (p <= 0 || p >= 1) continue;
+      const x = g * colW + colW / 2 + (e - 2) * 26, y = 8 + p * 110; ctx.globalAlpha = 1 - Math.max(0, p - .8) * 5;
+      ctx.fillStyle = "#fff8e8"; ctx.fillRect(x - 11, y - 7, 22, 15); ctx.strokeStyle = "#d88a25"; ctx.lineWidth = 1.5; ctx.strokeRect(x - 11, y - 7, 22, 15);
+      ctx.beginPath(); ctx.moveTo(x - 11, y - 7); ctx.lineTo(x, y + 2); ctx.lineTo(x + 11, y - 7); ctx.stroke(); ctx.globalAlpha = 1; } });
+    if (t > 7) names.forEach((n, g) => { const a = D.arms[arms[g]]; ctx.globalAlpha = ease((t - 7) / .6);
+      ctx.fillStyle = "#4ee1d2"; ctx.font = "800 22px 'Bricolage Grotesque', sans-serif"; ctx.fillText((a.visit * 100).toFixed(1) + "% visited", g * colW + colW / 2, H - 34);
+      ctx.fillStyle = "#f2bd51"; ctx.font = "500 13px 'DM Mono', monospace"; ctx.fillText((a.conversion * 100).toFixed(2) + "% bought · $" + a.spend.toFixed(2) + " each", g * colW + colW / 2, H - 12); ctx.globalAlpha = 1; });
+    if (t < 8.5) how.raf = requestAnimationFrame(frame);
+  }
+  how.raf = requestAnimationFrame(frame);
+}
+const howObs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting && !how.played) { how.played = true; howDraw(); } }), {threshold: .35});
+
+// ---------- claim 1 · waffles ----------
+let c1o = "visit";
+function drawC1() {
+  const arms = [["mens", "Mens email"], ["womens", "Womens email"], ["none", "No email"]];
+  $("#waffles").innerHTML = arms.map(([a, n]) => { const v = D.arms[a][c1o], on = c1o === "visit" ? Math.round(v * 100) : Math.round(v * 1000);
+    const cells = c1o === "visit" ? 100 : 100, per = c1o === "visit" ? "1 square = 1% of the group" : "1 square = 0.1% of the group";
+    return `<div><div class="waffle ${a}">${Array.from({length: cells}, (_, i) => `<i class="${i < on ? "on" : ""}"></i>`).join("")}</div>
+      <div class="wlabel">${n}</div><div class="wval">${(v * 100).toFixed(c1o === "visit" ? 1 : 2)}%</div><div class="muted" style="font-size:12px">${per}</div></div>`; }).join("");
+  const d = D.arms.mens[c1o + "_diff"], f = v => (v >= 0 ? "+" : "") + (v * 100).toFixed(2) + " points";
+  $("#c1Note").textContent = `Mens email vs no email: ${f(d[0])} (95% range ${f(d[1])} to ${f(d[2])}). Each group has about 21,300 customers. Spend: +$${D.arms.mens.spend_diff[0].toFixed(2)} per customer (95% range $${D.arms.mens.spend_diff[1].toFixed(2)} to $${D.arms.mens.spend_diff[2].toFixed(2)}).`;
+}
+$$("#c1Out button").forEach(b => b.onclick = () => { c1o = b.dataset.o; $$("#c1Out button").forEach(x => x.classList.toggle("on", x === b)); drawC1(); });
+
+// ---------- claim 2 · causal diagram + bars ----------
+let gate = true;
+function drawC2() {
+  const svg = $("#dag"); svg.replaceChildren();
+  const ink = css("--ink"), teal = css("--teal"), coral = css("--coral"), card = css("--card");
+  const defs = el("defs"); const mk = (id, c) => { const m = el("marker", {id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto"}); m.append(el("path", {d: "M0,0 L10,5 L0,10 z", fill: c})); return m; };
+  defs.append(mk("ah", ink), mk("ahOff", css("--line"))); svg.append(defs);
+  const node = (x, y, label, sub, fill) => { svg.append(el("rect", {x: x - 62, y: y - 30, width: 124, height: 60, rx: 18, fill, stroke: ink, "stroke-width": 1.5}));
+    const t = el("text", {x, y: y + 2, "text-anchor": "middle", style: `font:800 18px 'Bricolage Grotesque';fill:${ink}`}, label); svg.append(t);
+    svg.append(el("text", {x, y: y + 20, "text-anchor": "middle"}, sub)); };
+  const arrow = (x1, y1, x2, y2, on) => svg.append(el("line", {x1, y1, x2, y2, stroke: on ? ink : css("--line"), "stroke-width": on ? 3 : 2, "stroke-dasharray": on ? "" : "6 6", "marker-end": on ? "url(#ah)" : "url(#ahOff)"}));
+  arrow(122, 175, 198, 82, !gate); arrow(322, 82, 398, 175, !gate);
+  node(70, 190, "Email", "random", css("--gold-hi")); node(260, 70, "Visit", "after the email", gate ? css("--coral-soft") : card); node(450, 190, "Spend", "what we measure", css("--mint"));
+  if (gate) { svg.append(el("line", {x1: 216, y1: 22, x2: 304, y2: 118, stroke: coral, "stroke-width": 5, "stroke-linecap": "round"}));
+    svg.append(el("line", {x1: 304, y1: 22, x2: 216, y2: 118, stroke: coral, "stroke-width": 5, "stroke-linecap": "round"}));
+    svg.append(el("text", {x: 260, y: 142, "text-anchor": "middle", style: `fill:${coral};font-weight:600`}, "held fixed: the road is blocked")); }
+  else svg.append(el("text", {x: 260, y: 142, "text-anchor": "middle"}, "the email works through the visit"));
+  $("#gateBtn").textContent = "Control for visit: " + (gate ? "ON" : "OFF"); $("#gateBtn").classList.toggle("on", gate);
+  // bars
+  const on = $$("#c2Checks input").filter(i => i.checked).map(i => i.value).concat(gate ? ["visit"] : []);
+  const key = ["recency", "history", "newbie", "visit"].filter(k => on.includes(k)).join("|"), r = D.regression[key];
+  const b = $("#c2Bars"); b.replaceChildren();
+  const x = v => 120 + 320 * (v + .1) / 1.3;
+  [0, .25, .5, .75, 1].forEach(t => { b.append(el("line", {x1: x(t), x2: x(t), y1: 6, y2: 106, stroke: css("--line-soft")})); b.append(el("text", {x: x(t), y: 124, "text-anchor": "middle"}, "$" + t.toFixed(2))); });
+  [["mens", "Mens email", teal, 30], ["womens", "Womens email", css("--gold"), 76]].forEach(([k, n, c, y]) => { const [m, lo, hi] = r[k];
+    b.append(el("text", {x: 112, y: y + 5, "text-anchor": "end", style: `font:700 14px Manrope;fill:${ink}`}, n));
+    b.append(el("rect", {x: x(0), y: y - 13, width: Math.max(2, x(m) - x(0)), height: 26, rx: 8, fill: c, style: "transition:width .5s"}));
+    b.append(el("line", {x1: x(lo), x2: x(hi), y1: y, y2: y, stroke: ink, "stroke-width": 2}));
+    b.append(el("text", {x: x(Math.max(m, hi)) + 8, y: y + 5, style: `font:800 16px 'Bricolage Grotesque';fill:${ink}`}, "+$" + m.toFixed(2))); });
+}
+$("#gateBtn").onclick = () => { gate = !gate; drawC2(); };
+$$("#c2Checks input").forEach(i => i.onchange = drawC2);
+
+// ---------- claim 3 · lottery tickets ----------
+let scratched = false, bonf = false;
+function drawC3() {
+  const cut = bonf ? 0.05 / D.fish.length : 0.05;
+  $("#tickets").innerHTML = D.fish.map((f, i) => { const win = scratched && f.p_value < cut;
+    return `<div class="ticket ${scratched ? "scratched" : ""} ${win ? "win" : ""} ${scratched && i === 0 ? "pick" : ""}">
+      <div class="who">${f.zip_code} · ${f.channel} · ${f.newbie ? "new" : "returning"}</div>
+      <div class="p">p = ${f.p_value.toFixed(4)}${win ? " ★" : ""}</div><div class="foil"></div></div>`; }).join("");
+  const n = D.fish.filter(f => f.p_value < cut).length;
+  $("#c3Note").textContent = scratched ? `${n} of ${D.fish.length} tickets win at the ${bonf ? "corrected cutoff 0.05 / 18 = 0.0028" : "usual 0.05 cutoff"}. The outlined ticket is the memo's pick.` : "Scratch the tickets to see each test's p-value.";
+  $("#bonfBtn").classList.toggle("on", bonf); $("#bonfBtn").disabled = !scratched;
+}
+$("#scratch").onclick = () => { scratched = true; drawC3(); };
+$("#bonfBtn").onclick = () => { bonf = !bonf; drawC3(); };
+
+// ---------- claim 4 · split machine ----------
+$("#lpBox").innerHTML = md(D.lp_answer);
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], dim = [31,29,31,30,31,30,31,31,30,31,30,31];
+$("#bdMonth").innerHTML = months.map((m, i) => `<option value="${i + 1}">${m}</option>`).join("");
+const bd = store.get("birthday", [12, 25]); let use = "point";
+function fillDays() { const m = +$("#bdMonth").value, cur = +$("#bdDay").value || bd[1];
+  $("#bdDay").innerHTML = Array.from({length: dim[m - 1]}, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join(""); $("#bdDay").value = Math.min(cur, dim[m - 1]); }
+$("#bdMonth").value = bd[0]; fillDays(); $("#bdDay").value = bd[1];
+const prettySeg = s => { const [h, b, n] = s.split("|"); return ({under_100: "<$100", "100_to_500": "$100–500", "500_plus": "$500+"})[h] + " · " + ({mens_only: "Mens buyer", womens_only: "Womens buyer", both: "both"})[b] + " · " + n; };
+function drawC4() {
+  const m = +$("#bdMonth").value, d = +$("#bdDay").value, seed = m * 100 + d; store.set("birthday", [m, d]);
+  const mine = D.splits[use][seed];
+  $("#kPromise").textContent = money(mine[0]); $("#kDeliver").textContent = money(mine[1]); $("#kRandom").textContent = money(mine[3]);
+  $("#c4Chat").innerHTML = `Seed <code>${seed}</code> (same as <code>SEED = ${seed}</code> in the notebook): the plan delivered <b>${Math.round(100 * mine[1] / mine[0])}%</b> of its promise. Post in chat: <b>promised $${Math.round(mine[0] / 1000)}k, delivered $${Math.round(mine[1] / 1000)}k</b>.`;
+  // segment bars
+  const rows = D.plans[use][seed].slice().sort((a, b) => b[3] - a[3]), svg = $("#segBars"); svg.replaceChildren();
+  const ink = css("--ink"), L = 190, Rr = 540, lo = -1.5, hi = Math.max(3, ...rows.map(r => Math.max(r[3], r[4]))) + .2;
+  const x = v => L + (Rr - L) * (v - lo) / (hi - lo), rowH = 30;
+  for (let t = -1; t <= hi; t += 1) { svg.append(el("line", {x1: x(t), x2: x(t), y1: 0, y2: rows.length * rowH, stroke: t === 0 ? css("--muted") : css("--line-soft")})); svg.append(el("text", {x: x(t), y: rows.length * rowH + 16, "text-anchor": "middle"}, (t < 0 ? "−$" : "$") + Math.abs(t))); }
+  rows.forEach((r, i) => { const y = i * rowH + 4, picked = r[2] === 1;
+    if (picked) svg.append(el("rect", {x: 0, y: y - 2, width: Rr + 14, height: rowH - 2, rx: 8, fill: css("--gold-soft")}));
+    svg.append(el("text", {x: L - 8, y: y + 15, "text-anchor": "end", style: `font:${picked ? 700 : 500} 12px Manrope;fill:${ink}`}, prettySeg(D.segments[r[0]]) + (r[1] ? " (W)" : " (M)")));
+    const bar = (v, yy, c) => svg.append(el("rect", {x: Math.min(x(0), x(v)), y: yy, width: Math.abs(x(v) - x(0)), height: 10, rx: 4, fill: c}));
+    bar(r[3], y + 2, css("--mint")); bar(r[4], y + 13, css("--teal"));
+    if (picked) svg.append(el("circle", {cx: Rr + 6, cy: y + 12, r: 5, fill: css("--gold-hi"), stroke: ink, "stroke-width": 1.5})); });
+  const pk = rows.filter(r => r[2]), avg = k => pk.reduce((s, r) => s + r[k], 0) / Math.max(pk.length, 1);
+  $("#segSummary").textContent = `For your birthday, the ${pk.length} picked segments averaged +$${avg(3).toFixed(2)} per email on half A and +$${avg(4).toFixed(2)} on half B.`;
+  // scatter
+  const pts = Object.values(D.splits[use]), sv = $("#scatter"); sv.replaceChildren();
+  const top = Math.max(...Object.values(D.splits.point).map(p => Math.max(p[0], p[1]))) / 1000 * 1.04, bot = Math.min(0, ...pts.map(p => p[1] / 1000));
+  const sx = v => 46 + 360 * v / top, sy = v => 10 + 280 * (top - v) / (top - bot);
+  for (let t = 0; t <= top; t += 10) { sv.append(el("line", {x1: sx(t), x2: sx(t), y1: 10, y2: 290, stroke: css("--line-soft")})); sv.append(el("text", {x: sx(t), y: 306, "text-anchor": "middle"}, "$" + t + "k"));
+    if (t >= bot) { sv.append(el("line", {x1: 46, x2: 406, y1: sy(t), y2: sy(t), stroke: css("--line-soft")})); sv.append(el("text", {x: 40, y: sy(t) + 4, "text-anchor": "end"}, "$" + t + "k")); } }
+  sv.append(el("line", {x1: sx(0), y1: sy(0), x2: sx(top), y2: sy(top), stroke: css("--muted"), "stroke-dasharray": "5 5"}));
+  sv.append(el("text", {x: 226, y: 324, "text-anchor": "middle"}, "promised (half A)"));
+  pts.forEach(p => sv.append(el("circle", {cx: sx(p[0] / 1000), cy: sy(p[1] / 1000), r: 3, fill: css("--teal"), opacity: .4})));
+  sv.append(el("circle", {cx: sx(mine[0] / 1000), cy: sy(mine[1] / 1000), r: 8, fill: css("--coral"), stroke: css("--ink"), "stroke-width": 1.5}));
+  $("#v4share").textContent = Math.round(100 * pts.filter(p => p[1] < p[0]).length / pts.length) + "%";
+}
+$("#bdMonth").onchange = () => { fillDays(); drawC4(); }; $("#bdDay").onchange = drawC4;
+$$("[data-use]").forEach(b => b.onclick = () => { use = b.dataset.use; $$("[data-use]").forEach(x => x.classList.toggle("on", x === b)); drawC4(); });
+
+// ---------- claim 5 · cards ----------
+function renderCards() {
+  const picks = store.get("cards", {});
+  $("#cards").innerHTML = D.cards.map((c, i) => { const p = picks[i], fl = p !== undefined, wc = /^Classic/.test(c.winner), wj = /^JEV/.test(c.winner);
+    const right = fl && ((p === "classic" && wc) || (p === "jev" && wj));
+    return `<div class="gcard ${fl ? "flipped " + (right ? "right" : "miss") : ""}" data-i="${i}"><div class="in">
+      <div class="face"><div class="d">Card ${i + 1} · ${esc(c.data)}</div><div class="q">${inline(c.task)}</div>
+        <div class="toolbar" style="margin-top:auto"><button class="btn small" data-p="classic" type="button">Classic ML</button><button class="btn small" data-p="jev" type="button">JEV</button></div></div>
+      <div class="face back"><div class="d">Card ${i + 1} · ${right ? "you called it" : (wc || wj ? "not this time" : "trick card")}</div>
+        <div class="win">${inline(c.winner)}</div><div class="r">Classic: ${inline(c["classic ML"])}</div><div class="r">JEV: ${inline(c.JEV)}</div></div></div></div>`; }).join("");
+  $$("#cards .gcard").forEach(g => $$("[data-p]", g).forEach(b => b.onclick = () => { const pk = store.get("cards", {}); pk[g.dataset.i] = b.dataset.p; store.set("cards", pk); renderCards(); }));
+  const done = Object.keys(picks).length, score = D.cards.reduce((s, c, i) => s + ((picks[i] === "classic" && /^Classic/.test(c.winner)) || (picks[i] === "jev" && /^JEV/.test(c.winner)) ? 1 : 0), 0);
+  $("#score").textContent = done ? `Your score: ${score} of ${done}.` : "";
+}
+
+// ---------- ops · launch day ----------
+const O = D.ops, n = O.sessions.length; let metric = "sessions";
+$("#lostTxt").textContent = "$" + Math.round(O.lost / 1000) + "k";
+$("#alertCode").innerHTML = esc(D.alert_code).split("\n").map(l => /incident/.test(l) ? `<mark>${l}</mark>` : l).join("\n");
+const MET = { sessions: {arr: O.sessions, min: 1500, max: 3400, step: 100, def: 2500, fmt: v => Math.round(v).toLocaleString() + " sessions/h"},
+              err: {arr: O.err, min: 1, max: 20, step: .5, def: 10, fmt: v => v.toFixed(1) + "% failed"} };
+function setMetric(m) { metric = m; const M = MET[m], t = $("#thr"); t.min = M.min; t.max = M.max; t.step = M.step; t.value = M.def;
+  $$("[data-m]").forEach(b => b.classList.toggle("on", b.dataset.m === m)); drawOps(); }
+function drawOps() {
+  const M = MET[metric], arr = M.arr, thr = +$("#thr").value; $("#thrV").textContent = M.fmt(thr);
+  const fired = arr.map(v => v > thr), first = fired.map((f, i) => f && !fired[i - 1]);
+  const pages = first.filter(Boolean).length, inc = O.incident, caught = inc.some((v, i) => v && fired[i]);
+  const other = first.filter((f, i) => f && !inc[i]).length;
+  $("#oAlerts").textContent = pages; $("#oCaught").textContent = caught ? "yes" : "no"; $("#oCaught").style.color = caught ? css("--teal") : css("--coral");
+  $("#oOther").textContent = other;
+  const svg = $("#opsChart"); svg.replaceChildren();
+  const W = 900, H = 300, L = 54, R = 10, T = 14, B = 34, mx = Math.max(...arr, thr) * 1.12;
+  const x = i => L + (W - L - R) * i / (n - 1), y = v => T + (H - T - B) * (1 - v / mx);
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  // incident band + send line
+  const i0 = inc.indexOf(1), i1 = inc.lastIndexOf(1);
+  svg.append(el("rect", {x: x(i0) - 3, y: T, width: x(i1) - x(i0) + 6, height: H - T - B, fill: css("--coral"), opacity: .18}));
+  svg.append(el("line", {x1: x(O.send_index), x2: x(O.send_index), y1: T, y2: H - B, stroke: css("--gold-hi"), "stroke-width": 2, "stroke-dasharray": "6 5"}));
+  svg.append(el("text", {x: x(O.send_index) + 6, y: T + 12, style: `fill:${css("--gold-hi")};font-weight:500`}, "email sent"));
+  svg.append(el("text", {x: x(i1) + 8, y: T + 30, style: `fill:${css("--coral")};font-weight:500`}, "checkout outage"));
+  for (let dd = 0; dd < 7; dd++) { svg.append(el("line", {x1: x(dd * 24), x2: x(dd * 24), y1: T, y2: H - B, stroke: "rgba(255,255,255,.08)"})); svg.append(el("text", {x: x(dd * 24 + 12), y: H - 12, "text-anchor": "middle"}, days[dd])); }
+  [0, .25, .5, .75, 1].forEach(f => { const v = mx * f; svg.append(el("text", {x: L - 6, y: y(v) + 4, "text-anchor": "end"}, metric === "err" ? v.toFixed(0) + "%" : (v / 1000).toFixed(1) + "k")); });
+  const path = arr.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  svg.append(el("path", {d: path + `L${x(n - 1)},${y(0)}L${x(0)},${y(0)}Z`, fill: metric === "err" ? css("--coral") : css("--aqua"), opacity: .15}));
+  svg.append(el("path", {d: path, fill: "none", stroke: metric === "err" ? css("--coral") : css("--aqua"), "stroke-width": 2}));
+  svg.append(el("rect", {x: L, y: T, width: W - L - R, height: Math.max(0, y(thr) - T), fill: css("--gold-hi"), opacity: .07}));
+  svg.append(el("line", {x1: L, x2: W - R, y1: y(thr), y2: y(thr), stroke: css("--gold-hi"), "stroke-width": 1.5}));
+  first.forEach((f, i) => { if (f) { const c = inc[i] ? css("--coral") : css("--gold-hi"); svg.append(el("path", {d: `M${x(i)} ${y(arr[i]) - 6} l-7 -12 h14 z`, fill: c, stroke: "#0a1716", "stroke-width": 1})); } });
+}
+$("#thr").oninput = drawOps;
+$$("[data-m]").forEach(b => b.onclick = () => setMetric(b.dataset.m));
+
+// ---------- start ----------
+$("#resetBtn").onclick = () => { ["revealed", "cards", "poll1", "poll2"].forEach(k => store.set(k, k === "revealed" || k === "cards" ? {} : null)); scratched = false; bonf = false; gate = true; drawAll(); location.hash = "#how"; how.played = true; howDraw(); };
+$("#howReplay").onclick = howDraw;
+$("#themeBtn").onclick = () => { const r = document.documentElement, dark = getComputedStyle(r).colorScheme === "dark"; r.dataset.theme = dark ? "light" : "dark"; store.set("theme", r.dataset.theme); drawAll(); };
+const th = store.get("theme", null); if (th) document.documentElement.dataset.theme = th;
+function drawAll() { renderMemo(); poll("#poll", "poll1"); poll("#poll2", "poll2"); drawC1(); drawC2(); drawC3(); drawC4(); renderCards(); setMetric(metric); }
+drawAll();
+howObs.observe($("#how"));
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (how.played) howDraw(); }, 250); });
+const renderTex = () => window.renderMathInElement && renderMathInElement($("#lpBox"), {delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}], throwOnError: false});
+if (window.renderMathInElement) renderTex(); else addEventListener("load", renderTex);
+})();
+</script>
+</body>
+</html>
