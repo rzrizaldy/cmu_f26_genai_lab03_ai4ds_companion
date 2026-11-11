@@ -1,732 +1,101 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The memo that promised $32k</title>
-<meta name="description" content="Lab 03 companion: an AI wrote the memo, you review it, claim by claim, in your browser.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Mono:wght@400;500&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>Notification Lab · AI for Data Science</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{
-  color-scheme: light;
-  --cream:#fff8e8; --paper:#fffdf4; --card:#ffffff; --ink:#173b39; --ink-deep:#10302d; --muted:#53716c;
-  --teal:#239c84; --teal-ink:#1f7f6b; --mint:#b0e8ce; --mint-soft:#dcf5e9; --aqua:#4ee1d2;
-  --gold:#d88a25; --gold-hi:#f2bd51; --coral:#df7655; --coral-soft:#fbe1d7; --gold-soft:#fdecc8;
-  --line:rgba(45,117,98,.30); --line-soft:rgba(45,117,98,.16); --dark:#173b39; --dark-2:#1f4a46; --on-dark:#eaf6f0;
-  --head:"Bricolage Grotesque",ui-rounded,system-ui,sans-serif; --body:"Manrope",system-ui,sans-serif; --mono:"DM Mono",ui-monospace,monospace;
-  --shadow:0 2px 0 var(--ink);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    color-scheme: dark;
-    --cream:#0f2120; --paper:#132826; --card:#173230; --ink:#e7f4ee; --ink-deep:#ffffff; --muted:#9dbcb4;
-    --teal:#3fc3a6; --teal-ink:#6fd9c0; --mint:#1d4d43; --mint-soft:#183c35; --gold:#f2bd51; --gold-hi:#f7cf73;
-    --coral:#f08c6c; --coral-soft:#3b2620; --gold-soft:#3a2f17; --line:rgba(150,220,200,.28); --line-soft:rgba(150,220,200,.14);
-    --dark:#0a1716; --dark-2:#12302c; --on-dark:#eaf6f0; --shadow:0 2px 0 rgba(0,0,0,.5);
-  }
-}
-:root[data-theme="dark"]{
-  color-scheme: dark;
-  --cream:#0f2120; --paper:#132826; --card:#173230; --ink:#e7f4ee; --ink-deep:#ffffff; --muted:#9dbcb4;
-  --teal:#3fc3a6; --teal-ink:#6fd9c0; --mint:#1d4d43; --mint-soft:#183c35; --gold:#f2bd51; --gold-hi:#f7cf73;
-  --coral:#f08c6c; --coral-soft:#3b2620; --gold-soft:#3a2f17; --line:rgba(150,220,200,.28); --line-soft:rgba(150,220,200,.14);
-  --dark:#0a1716; --dark-2:#12302c; --on-dark:#eaf6f0; --shadow:0 2px 0 rgba(0,0,0,.5);
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
-.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
-a{color:var(--teal-ink)}
-code{font-family:var(--mono);font-size:.88em;background:var(--line-soft);padding:1px 5px;border-radius:5px}
-h1,h2,h3{font-family:var(--head);letter-spacing:-.02em;line-height:1.02;margin:0}
-h1{font-size:clamp(40px,7.4vw,82px);font-weight:800}
-h1 .two{color:var(--teal)}
-h2{font-size:clamp(28px,4.4vw,46px);font-weight:800}
-h3{font-size:22px;font-weight:750;margin:22px 0 8px}
-.eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.lede{font-size:18px;color:var(--muted);max-width:680px}
-.pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;
-  border:1.5px solid var(--line);border-radius:999px;padding:5px 12px;background:var(--paper);color:var(--ink)}
-.pill .live{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 3px var(--mint)}
-.btn{font:600 14px var(--body);border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:999px;padding:9px 16px;cursor:pointer;box-shadow:var(--shadow);transition:transform .08s}
-.btn:active{transform:translateY(2px);box-shadow:none}
-.btn.gold{background:var(--gold-hi);color:#173b39}
-.btn.on{background:var(--ink);color:var(--cream)}
-.btn.small{font-size:13px;padding:6px 12px}
-.btn:disabled{opacity:.5}
-/* top bar */
-.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--cream) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft)}
-.topbar .wrap{display:flex;align-items:center;gap:18px;height:58px}
-.brand{font-family:var(--head);font-weight:800;font-size:22px;letter-spacing:-.03em;text-decoration:none;color:var(--ink)}
-.brand span{color:var(--teal)}
-.topnav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1}
-.topnav a{flex:none;text-decoration:none;color:var(--ink);font-size:14px;font-weight:600;padding:6px 10px;border-radius:999px}
-.topnav a:hover{background:var(--line-soft)}
-.topnav a .d{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--line);vertical-align:1px}
-.topnav a.holds .d{background:var(--teal)} .topnav a.wrong .d{background:var(--coral)} .topnav a.part .d{background:var(--gold)}
-#themeBtn{flex:none}
-/* hero */
-.hero{text-align:center;padding:56px 0 30px}
-.hero .lede{margin:22px auto 26px}
-.hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-/* blocks */
-.block{border:1.5px solid var(--ink);border-radius:28px;padding:28px;margin:0 0 26px;scroll-margin-top:72px;background:var(--paper);box-shadow:0 3px 0 var(--ink)}
-.block.mint{background:var(--mint-soft)}
-.block.dark{background:var(--dark);color:var(--on-dark);border-color:var(--dark)}
-.block.dark .eyebrow,.block.dark .muted{color:#a9cfc4}
-.block.dark .pill{background:transparent;color:var(--on-dark);border-color:#2f6a62}
-.block.dark code{background:rgba(255,255,255,.1)}
-.bhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.muted{color:var(--muted)}
-.quote{font-family:var(--head);font-size:clamp(20px,2.6vw,26px);font-weight:600;line-height:1.25;margin:14px 0 18px;padding-left:18px;border-left:5px solid var(--gold-hi)}
-.grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:start}
-@media (max-width:820px){.grid2{grid-template-columns:1fr}}
-.panel{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px}
-.block.dark .panel{background:var(--dark-2);border-color:#2f6a62}
-.answer{display:none;margin-top:16px;border-radius:18px;padding:16px 18px;background:var(--dark);color:var(--on-dark)}
-.block.dark .answer{background:var(--cream);color:#173b39}
-.answer.show{display:block;animation:pop .35s ease}
-@keyframes pop{from{transform:translateY(6px);opacity:0}to{transform:none;opacity:1}}
-.answer .tag{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-hi)}
-.block.dark .answer .tag{color:var(--gold)}
-.answer .big{font-family:var(--head);font-weight:800;font-size:24px;line-height:1.15;margin:4px 0 6px}
-.stamp{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:2px;font-style:normal}
-.stamp.holds{background:var(--mint);color:#16433e} .stamp.wrong{background:var(--coral);color:#fff} .stamp.part{background:var(--gold-hi);color:#173b39}
-.num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--gold-hi);color:#173b39;font:700 12px var(--mono);border:1.5px solid var(--ink);flex:none}
-.howto{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px}
-.howto li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
-@media (max-width:620px){.kpis{grid-template-columns:1fr}}
-.kpi{border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;background:var(--card)}
-.block.dark .kpi{background:var(--dark-2);border-color:#2f6a62}
-.kpi .v{font-family:var(--head);font-weight:800;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
-.kpi .l{font-size:12.5px;color:var(--muted);margin-top:4px}
-.kpi.promise .v{color:var(--teal)} .kpi.deliver .v{color:var(--coral)}
-canvas,svg{display:block;width:100%;height:auto}
-svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
-.block.dark svg text{fill:#a9cfc4}
-select,input[type=number]{font:600 14px var(--body);padding:8px 10px;border-radius:12px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink)}
-input[type=range]{width:100%;accent-color:var(--teal)}
-label.chk{display:inline-flex;gap:7px;align-items:center;margin:4px 14px 4px 0;font-weight:600;cursor:pointer}
-pre{font-family:var(--mono);font-size:12.5px;line-height:1.5;background:var(--dark);color:#d8efe7;border-radius:14px;padding:14px;overflow:auto;margin:10px 0}
-pre mark{background:var(--coral);color:#fff;border-radius:3px;padding:0 2px}
-details summary{cursor:pointer;font-weight:700;color:var(--teal-ink)}
-.block.dark details summary{color:var(--gold-hi)}
-/* memo */
-.memo{background:var(--card);border:1.5px solid var(--ink);border-radius:20px;padding:22px 24px;box-shadow:0 3px 0 var(--ink);position:relative}
-.memo .from{font-family:var(--mono);font-size:12px;color:var(--muted);border-bottom:1px dashed var(--line);padding-bottom:10px;margin-bottom:12px;display:grid;gap:2px}
-.memo .subject{font-family:var(--head);font-weight:750;font-size:22px;margin-bottom:10px}
-.memo ol{list-style:none;padding:0;margin:12px 0;counter-reset:c}
-.memo li{counter-increment:c;display:flex;gap:12px;padding:10px;border-radius:14px;cursor:pointer;border:1.5px dashed transparent}
-.memo li::before{content:counter(c);flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gold-hi);border:1.5px solid var(--ink);font:700 12px var(--mono);color:#173b39}
-.memo li:hover{border-color:var(--gold);background:var(--gold-soft)}
-.poll{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px}
-/* claim 1 waffles */
-.waffles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-@media (max-width:620px){.waffles{grid-template-columns:1fr}}
-.waffle{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
-.waffle i{aspect-ratio:1;border-radius:3px;background:var(--line-soft)}
-.waffle i.on{background:var(--teal)} .waffle.mens i.on{background:var(--teal)} .waffle.womens i.on{background:var(--gold)} .waffle.none i.on{background:var(--muted)}
-.wlabel{font-family:var(--head);font-weight:750;font-size:18px;margin:8px 0 0}
-.wval{font-family:var(--head);font-weight:800;font-size:30px}
-/* claim 3 tickets */
-.tickets{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
-.ticket{border:1.5px dashed #2f6a62;border-radius:14px;padding:10px;min-height:84px;background:var(--dark-2);position:relative;overflow:hidden;font-size:12.5px}
-.ticket .who{font-weight:700;color:var(--on-dark)}
-.ticket .p{font-family:var(--mono);margin-top:6px;color:#a9cfc4;opacity:0;transition:opacity .3s}
-.ticket.scratched .p{opacity:1}
-.ticket .foil{position:absolute;inset:auto 8px 8px 8px;height:24px;border-radius:8px;background:repeating-linear-gradient(45deg,#2f6a62 0 6px,#28605a 6px 12px);transition:opacity .3s}
-.ticket.scratched .foil{opacity:0}
-.ticket.win{border-style:solid;border-color:var(--gold-hi);background:#2a4a2c}
-.ticket.win .p{color:var(--gold-hi);font-weight:600}
-.ticket.pick{outline:2.5px solid var(--gold-hi);outline-offset:2px}
-.bigstat{font-family:var(--head);font-weight:800;font-size:56px;line-height:1;color:var(--gold-hi)}
-/* claim 5 */
-.rows{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media (max-width:700px){.rows{grid-template-columns:1fr}}
-.review{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px;font-size:15px}
-.review .stars{color:var(--gold);letter-spacing:2px}
-.trow{font-family:var(--mono);font-size:12.5px;display:grid;grid-template-columns:auto auto;gap:4px 14px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px}
-.guess{margin-top:8px;font-weight:700}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:14px}
-.gcard{perspective:900px;min-height:210px}
-.gcard .in{position:relative;width:100%;height:100%;min-height:210px;transition:transform .5s;transform-style:preserve-3d}
-.gcard.flipped .in{transform:rotateY(180deg)}
-.gcard .face{position:absolute;inset:0;backface-visibility:hidden;border:1.5px solid var(--ink);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--card);box-shadow:0 3px 0 var(--ink)}
-.gcard .back{transform:rotateY(180deg);background:var(--mint-soft)}
-.gcard.miss .back{background:var(--coral-soft)}
-.gcard .q{font-family:var(--head);font-weight:700;font-size:17px;line-height:1.2}
-.gcard .d{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.gcard .r{font-size:13px}
-.gcard .win{font-family:var(--head);font-weight:800;font-size:18px}
-.rule{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
-@media (max-width:700px){.rule{grid-template-columns:1fr}}
-.rule > div{border-radius:18px;padding:16px;border:1.5px solid var(--ink)}
-.rule .yes{background:var(--mint-soft)} .rule .no{background:var(--gold-soft)}
-.rule b{font-family:var(--head);font-size:19px;display:block;margin-bottom:4px}
-/* ops */
-.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
-@media (max-width:760px){.timeline{grid-template-columns:1fr 1fr}}
-.tstep{border:1.5px solid var(--line);border-radius:16px;padding:12px;background:var(--card);font-size:13.5px}
-.tstep .t{font-family:var(--mono);font-size:12px;color:var(--muted)}
-.tstep b{font-family:var(--head);font-size:17px;display:block;margin:2px 0}
-.tstep.bad{border-color:var(--coral);background:var(--coral-soft)}
-.shot{border-radius:16px;border:1.5px solid var(--ink);overflow:hidden;box-shadow:0 3px 0 var(--ink);margin-top:10px}
-.shot img{display:block;width:100%;height:auto}
-.caption{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:8px}
-table.t{border-collapse:collapse;width:100%;font-size:15px}
-table.t td,table.t th{padding:10px 8px;border-bottom:1px dashed var(--line);text-align:left;vertical-align:top}
-table.t th{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase}
-.band{background:var(--dark);color:var(--on-dark);border-radius:28px;padding:36px 32px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin:10px 0 26px}
-.band h2{color:var(--on-dark)}
-footer{font-size:13px;color:var(--muted);padding:6px 0 50px;border-top:1px solid var(--line-soft)}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:6px}
-.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-2px}
-.mdbox{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:12px 18px;max-height:340px;overflow:auto;font-size:14.5px}
-.mdbox h3{font-size:17px;margin:12px 0 4px}
-.mdbox p{margin:6px 0}
-</style>
-</head>
-<body>
+:root{--bg:#fff;--ink:#243444;--muted:#637483;--line:#dfe5e9;--surface:#f5f8fa;--green:#58cc02;--green-dark:#397d00;--blue:#1677b8;--yellow:#ffd85a;--purple:#8251c9;--red:#c54142;--shadow:#dfe5e9}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:110px}body{margin:0;background:var(--bg);color:var(--ink);font:700 17px/1.6 Nunito,system-ui,sans-serif}h1,h2,h3,p{margin:0 0 18px}h1{font-size:clamp(36px,6vw,64px);line-height:1.08;letter-spacing:-2px;font-weight:900;max-width:650px}h2{font-size:32px;line-height:1.2;font-weight:900}h3{font-size:21px;line-height:1.3}p{max-width:72ch}a{color:var(--blue);text-underline-offset:4px}button,select,input{font:800 16px Nunito,system-ui}button,.button{border:2px solid var(--line);border-bottom-width:5px;border-radius:15px;padding:12px 20px;background:var(--bg);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block;line-height:1.35}button:hover,.button:hover{filter:brightness(.97)}button:active{transform:translateY(2px);border-bottom-width:3px;margin-bottom:2px}button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid var(--blue);outline-offset:4px}.primary{background:var(--green);border-color:#46a302;color:#173d00}.wrap{width:min(100% - 40px,1080px);margin:auto}header{position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--line);z-index:10}.top{display:flex;align-items:center;gap:20px;padding:18px 0}.wordmark{font-size:22px;font-weight:900;white-space:nowrap;color:var(--green-dark)}.progress{height:14px;border-radius:9px;background:var(--line);flex:1;overflow:hidden}.progress span{display:block;height:100%;width:0;background:var(--green);transition:width .3s}#progress-label{font-size:14px;white-space:nowrap}#theme{padding:7px 12px;font-size:14px}.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:44px;align-items:center;padding:68px 0 55px}.meta{color:var(--muted);font-size:14px;margin-bottom:20px}.hero p{font-size:19px;color:var(--muted);margin:25px 0}.phone{max-width:350px;margin:auto;border:3px solid var(--ink);border-bottom-width:9px;border-radius:36px;background:var(--surface);padding:26px 20px;transform:rotate(3deg)}.phone-top{width:65px;height:9px;background:var(--ink);border-radius:10px;margin:0 auto 28px}.notice{border:2px solid var(--line);border-radius:20px;padding:22px;background:var(--bg);box-shadow:0 5px 0 var(--shadow)}.bell{width:52px;height:52px;background:var(--green);border-radius:16px;display:grid;place-items:center;margin-bottom:14px;color:#183d02;font-size:27px}.phone small{font-size:13px;color:var(--muted)}.phone strong{font-size:26px;display:block}.outcome{display:flex;align-items:center;gap:10px;margin:25px 0 0;line-height:1.3}.outcome .dot{width:17px;height:17px;border:3px solid var(--green-dark);border-radius:50%;flex:none}.path{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:55px}.path a{text-decoration:none;color:var(--ink);border:2px solid var(--line);border-bottom-width:6px;border-radius:20px;padding:22px}.path b{display:block;font-size:23px}.path span{color:var(--muted);font-size:15px}.number{display:grid;place-items:center;width:45px;height:45px;border-radius:50%;background:var(--green);color:#173d00;font-size:23px;margin-bottom:15px}section{padding:50px 0;border-top:2px solid var(--line)}.intro{max-width:750px;margin-bottom:30px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.panel{border:2px solid var(--line);border-radius:23px;padding:26px;min-width:0}.panel.blue{background:var(--surface)}.tip{border-left:5px solid var(--yellow);padding:12px 18px;background:var(--surface);border-radius:0 12px 12px 0;color:var(--muted);font-size:15px;margin:22px 0}.mode{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0}.mode button{padding:9px 15px}.mode button[aria-pressed=true]{background:var(--blue);color:white;border-color:#125c8c}.bar-row{display:grid;grid-template-columns:auto 1fr 65px;align-items:center;gap:12px;margin:9px 0}.bar-track{background:var(--surface);border-radius:9px;height:22px;overflow:hidden}.bar-fill{height:100%;background:var(--blue2);box-shadow:inset 0 -4px 0 var(--blue2-dark);border-radius:8px}.bar-value{font-size:14px;text-align:right}.bar-row small{font-size:12px}.result{padding:18px;border-radius:16px;background:var(--surface);margin:18px 0;color:var(--ink)}.stat{font-size:34px;font-weight:900;line-height:1.2}.muted{color:var(--muted)}.quiz{margin-top:28px}.quiz button{margin:0 8px 10px 0;text-align:left}.feedback{border-radius:16px;background:var(--surface);padding:18px;display:none;margin-top:12px}.feedback.show{display:block}.feedback.correct{border:2px solid var(--green-dark)}.feedback.retry{border:2px solid var(--yellow)}.feedback p{margin:0}code,pre{font-family:ui-monospace,SFMono-Regular,monospace;font-size:13px}code{overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;background:var(--surface);padding:18px;border-radius:14px;margin:15px 0}.badge{background:var(--surface);padding:5px 11px;border-radius:9px;font-size:14px;display:inline-block;margin:3px}.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0}.flow span{border:2px solid var(--line);border-radius:12px;padding:10px}.flow b{color:var(--muted)}.table-scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:12px 10px;border-bottom:2px solid var(--line);text-align:left}th{color:var(--muted)}.chart{width:100%;height:auto;display:block}.chart text{fill:var(--muted);font:700 12px Nunito,system-ui}.reveal[hidden]{display:none}.pick[aria-pressed=true]{border-color:var(--green-dark);background:var(--surface)}details{border-top:2px solid var(--line);padding:18px 0}summary{cursor:pointer;font-weight:900}.cta{background:var(--surface);border-radius:22px;padding:30px;margin:25px 0}.checks{display:grid;gap:12px}.checks label{display:flex;gap:12px;align-items:flex-start}.checks input{width:21px;height:21px;flex:none;accent-color:var(--green-dark);margin-top:4px}.checks span{font-weight:700}footer{padding:35px 0;color:var(--muted);font-size:14px}select{max-width:100%;padding:8px;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px}.space{margin-top:24px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14242d;--ink:#f2f7f9;--muted:#adc0ca;--line:#354c59;--surface:#1e333f;--green-dark:#83d84b;--blue:#66c3ff;--shadow:#0d1b23}}:root[data-theme=dark]{--bg:#14242d;--ink:#f2f7f9;--muted:#adc0ca;--line:#354c59;--surface:#1e333f;--green-dark:#83d84b;--blue:#66c3ff;--shadow:#0d1b23}@media(max-width:700px){.wrap{width:calc(100% - 30px)}.hero{grid-template-columns:1fr;padding:36px 0;gap:32px}.hero p{font-size:17px}.phone{max-width:295px;transform:rotate(0)}.grid,.path{grid-template-columns:1fr}.path{gap:12px;margin-bottom:30px}.path a{padding:16px;display:grid;grid-template-columns:45px 1fr;column-gap:15px}.path .number{grid-row:1/3;margin:0}.path b{font-size:20px}.top{gap:10px}.wordmark{font-size:16px}#progress-label{font-size:11px}.progress{min-width:35px}#theme{font-size:12px;padding:7px 9px}.panel{padding:19px}h2{font-size:28px}section{padding:34px 0}th,td{padding:10px 6px;font-size:13px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
 
-<div class="topbar"><div class="wrap">
-  <a class="brand" href="#top">lab<span>03</span></a>
-  <nav class="topnav" id="nav">
-    <a href="#how"><span class="d"></span>How it worked</a>
-    <a href="#memo"><span class="d"></span>Memo</a>
-    <a href="#c1" data-c="1"><span class="d"></span>1 · Test</a>
-    <a href="#c2" data-c="2"><span class="d"></span>2 · Controls</a>
-    <a href="#c3" data-c="3"><span class="d"></span>3 · Subgroup</a>
-    <a href="#c4" data-c="4"><span class="d"></span>4 · The $32k</a>
-    <a href="#c5" data-c="5"><span class="d"></span>5 · AI vs ML</a>
-    <a href="#ops"><span class="d"></span>Launch day</a>
-    <a href="#signoff"><span class="d"></span>Sign-off</a>
-  </nav>
-  <button class="btn small" id="themeBtn" type="button" aria-label="Switch light or dark">◐</button>
-</div></div>
-
-<main class="wrap" id="top">
-
-<section class="hero">
-  <span class="pill"><span class="live"></span>Lab 03 · AI for Data Science · Fri 13 Nov 2026</span>
-  <h1 style="margin-top:20px">Gemma wrote the memo.<br><span class="two">You find the itch.</span></h1>
-  <p class="lede">A clothing shop emailed 64,000 past customers at random. A junior analyst ran the numbers with AI help, and Gemma wrote the recommendation: five confident claims and a $32k promise. Check each one before you sign.</p>
-  <div class="cta">
-    <a class="btn gold" href="#how">Start the review ↓</a>
-    <button class="btn" id="resetBtn" type="button">Start over</button>
-  </div>
-</section>
-
-<!-- HOW THE EXPERIMENT WORKED -->
-<section class="block dark" id="how">
-  <div class="bhead"><span class="eyebrow">00 · How the experiment worked</span><span class="pill">real data · Hillstrom 2008</span></div>
-  <h2>One coin flip per customer, then two weeks of waiting.</h2>
-  <p class="muted" id="howCaption" style="min-height:48px;font-size:17px;margin:12px 0"></p>
-  <canvas id="howCanvas" height="330" aria-label="Animation: customers split into three groups, emails sent, visitors and buyers light up"></canvas>
-  <div class="toolbar"><button class="btn small" id="howReplay" type="button">▶ Replay</button><span class="legend"><span><i style="background:#4f7d75"></i>1 dot = 100 customers</span><span><i style="background:var(--aqua)"></i>visited the site</span><span><i style="background:var(--gold-hi)"></i>bought something</span></span></div>
-</section>
-
-<!-- MEMO -->
-<section class="block" id="memo">
-  <div class="bhead"><span class="eyebrow">01 · The memo</span><span class="pill">written by Gemma 4 · real output</span></div>
-  <div class="grid2">
-    <div class="memo" id="memoBox"></div>
-    <div>
-      <h3 style="margin-top:0">Your first verdict</h3>
-      <p class="muted">Vote before you check anything. You will vote again at the end.</p>
-      <div class="poll" id="poll"><button class="btn" data-v="sign" type="button">Sign</button><button class="btn" data-v="changes" type="button">Sign with changes</button><button class="btn" data-v="reject" type="button">Reject</button></div>
-      <ul class="howto">
-        <li><span class="num">1</span><span>Squad A (born Jan–Apr) checks claim 1, Squad B (May–Aug) claim 2, Squad C (Sep–Dec) claim 3.</span></li>
-        <li><span class="num">2</span><span>Everyone does claim 4 with their own birthday, and votes on the claim 5 cards.</span></li>
-        <li><span class="num">3</span><span>Click any claim in the memo to jump to its check.</span></li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- CLAIM 1 -->
-<section class="block mint" id="c1">
-  <div class="bhead"><span class="eyebrow">Claim 1 · statistical test</span><span class="pill">Squad A · born Jan–Apr</span></div>
-  <h2>Did the Mens email work?</h2>
-  <p class="quote" data-claim="1"></p>
-  <div class="toolbar" id="c1Out">
-    <button class="btn small on" data-o="visit" type="button">Visited the site</button>
-    <button class="btn small" data-o="conversion" type="button">Bought something</button>
-  </div>
-  <div class="waffles" id="waffles"></div>
-  <p class="muted" id="c1Note" style="margin-top:12px"></p>
-  <button class="btn gold" data-reveal="1" type="button">Reveal the verdict</button>
-  <div class="answer" id="v1"><div class="tag">Answer · holds</div><div class="big">Yes: +7.7 points in visits, about +$0.77 per customer.</div>
-    The split is fine (each group got about a third, SRM p = 0.90). The 95% range for spend is $0.49 to $1.06. With 21,000 people per group almost anything is "significant", so the size and the range are the numbers to report. Spend is $0 for 99% of people, which is why the t-test, Mann-Whitney and a bootstrap answer slightly different questions.</div>
-</section>
-
-<!-- CLAIM 2 -->
-<section class="block" id="c2">
-  <div class="bhead"><span class="eyebrow">Claim 2 · econometrics</span><span class="pill">Squad B · born May–Aug</span></div>
-  <h2>Which controls belong in the model?</h2>
-  <p class="quote" data-claim="2"></p>
-  <div class="grid2">
-    <div class="panel"><svg id="dag" viewBox="0 0 520 250" role="img" aria-label="Email causes a visit, a visit causes spend"></svg>
-      <div class="toolbar"><button class="btn on" id="gateBtn" type="button">Control for visit: ON</button></div></div>
-    <div>
-      <p>Emails were assigned <b>at random</b>, so comparing the groups is already causal. The analyst added controls. Turning on <code>visit</code> means: compare only people who all visited, or all didn't.</p>
-      <div id="c2Checks"><span class="muted" style="font-size:13px">other controls:</span>
-        <label class="chk"><input type="checkbox" value="recency" checked> recency</label>
-        <label class="chk"><input type="checkbox" value="history" checked> log(history)</label>
-        <label class="chk"><input type="checkbox" value="newbie" checked> newbie</label></div>
-      <svg id="c2Bars" viewBox="0 0 460 130" role="img" aria-label="Estimated email effect"></svg>
-    </div>
-  </div>
-  <button class="btn gold" data-reveal="2" type="button" style="margin-top:12px">Reveal the verdict</button>
-  <div class="answer" id="v2"><div class="tag">Answer · wrong</div><div class="big">Visit is the road the email travels on. Blocking it hides the effect.</div>
-    With <code>visit</code> in the model the Mens effect is $0.22; without it, $0.77. Visiting happens <i>after</i> the email and partly <i>because of</i> it, so it is a <b>bad control</b>. Every control has to be measured before the treatment. The other three controls barely move anything, which is what randomization buys you.</div>
-</section>
-
-<!-- CLAIM 3 -->
-<section class="block dark" id="c3">
-  <div class="bhead"><span class="eyebrow">Claim 3 · multiple testing</span><span class="pill">Squad C · born Sep–Dec</span></div>
-  <h2>A winning subgroup, or a winning lottery ticket?</h2>
-  <p class="quote" data-claim="3"></p>
-  <div class="grid2">
-    <div>
-      <p>The analyst ran the same test (Womens email vs no email, on buying) in <b>18 subgroups</b> and reported the best one. Each ticket is one test.</p>
-      <div class="tickets" id="tickets"></div>
-      <div class="toolbar"><button class="btn gold small" id="scratch" type="button">Scratch all 18</button><button class="btn small" id="bonfBtn" type="button">Use the corrected cutoff</button></div>
-    </div>
-    <div class="panel">
-      <div class="eyebrow">If the email did nothing anywhere</div>
-      <div class="bigstat" style="margin:8px 0">60%</div>
-      <p style="margin:0">chance that at least one of 18 tests still looks "significant" at p &lt; 0.05. That's 1 − 0.95<sup>18</sup>.</p>
-      <p class="muted" id="c3Note" style="margin-top:12px"></p>
-    </div>
-  </div>
-  <button class="btn gold" data-reveal="3" type="button" style="margin-top:12px">Reveal the verdict</button>
-  <div class="answer" id="v3"><div class="tag">Answer · a hypothesis for now</div><div class="big">The ticket might be real, but the memo hid how many were bought.</div>
-    Urban / Web / new customers still passes the Bonferroni cutoff (0.05 / 18 = 0.0028), so it may be a real effect. The memo never said 18 groups were compared. A target found by searching should be tested again in the next campaign before budget moves to it.</div>
-</section>
-
-<!-- CLAIM 4 -->
-<section class="block mint" id="c4">
-  <div class="bhead"><span class="eyebrow">Claim 4 · optimization</span><span class="pill">everyone · use your birthday</span></div>
-  <h2>Will 20,000 emails really bring $32k?</h2>
-  <p class="quote" data-claim="4"></p>
-  <h3>Step 1 · Gemma's formulation. What's missing?</h3>
-  <div class="mdbox" id="lpBox"></div>
-  <details style="margin-top:8px"><summary>Show the missing piece</summary><p>The task said each email costs $0.10, but the objective only adds up uplift. With the cost included, a segment whose uplift is below $0.10 loses money. Our solver includes it.</p></details>
-  <h3>Step 2 · Plan on half the customers, check on the other half</h3>
-  <div class="toolbar">
-    <span class="muted">Your birthday</span><select id="bdMonth" aria-label="Birth month"></select><select id="bdDay" aria-label="Birth day"></select>
-    <button class="btn small on" data-use="point" type="button">Trust the estimates</button>
-    <button class="btn small" data-use="low" type="button">Plan on the low end</button>
-  </div>
-  <div class="kpis">
-    <div class="kpi promise"><div class="v" id="kPromise">–</div><div class="l">promised, from half A's estimates</div></div>
-    <div class="kpi deliver"><div class="v" id="kDeliver">–</div><div class="l">delivered on half B (new customers)</div></div>
-    <div class="kpi"><div class="v" id="kRandom">–</div><div class="l">Mens email to 20,000 random customers</div></div>
-  </div>
-  <p id="c4Chat" style="font-size:15px"></p>
-  <div class="grid2">
-    <div class="panel">
-      <div class="eyebrow" style="margin-bottom:6px">Why it shrinks · extra spend per email, by segment</div>
-      <svg id="segBars" viewBox="0 0 560 420" role="img" aria-label="Segment uplift on half A vs half B"></svg>
-      <div class="legend"><span><i style="background:var(--mint)"></i>half A (used to plan)</span><span><i style="background:var(--teal)"></i>half B (new customers)</span><span><i style="background:var(--gold-hi);border:1.5px solid var(--ink)"></i>picked by the plan</span></div>
-    </div>
-    <div>
-      <ul class="howto" style="margin-top:0">
-        <li><span class="num">1</span><span>The optimizer ranks segments by half A's numbers and sends to the best ones.</span></li>
-        <li><span class="num">2</span><span>Some of those numbers were high by luck (a few big spenders landed in half A).</span></li>
-        <li><span class="num">3</span><span>On half B, the picked segments come out lower. <b id="segSummary"></b></span></li>
-      </ul>
-      <div class="panel" style="margin-top:14px">
-        <div class="eyebrow" style="margin-bottom:6px">Every birthday in class</div>
-        <svg id="scatter" viewBox="0 0 420 330" role="img" aria-label="Promised vs delivered for 366 birthdays"></svg>
-        <div class="legend"><span><i style="background:var(--teal)"></i>one birthday</span><span><i style="background:var(--coral)"></i>yours</span><span>dashed: delivered = promised</span></div>
-      </div>
-    </div>
-  </div>
-  <button class="btn gold" data-reveal="4" type="button" style="margin-top:14px">Reveal the verdict</button>
-  <div class="answer" id="v4"><div class="tag">Answer · the promise is too big</div><div class="big">The plan delivers about half of what it promises, in <span id="v4share">97%</span> of birthdays.</div>
-    Planning "carefully" on the low end makes the promise smaller, but it still delivers about half of it. The optimizer picks segments whose estimates were lucky, so only fresh data tells you what a plan is worth. The plan still beats emailing 20,000 random customers. Next time, keep a random holdout group in the send to measure it.</div>
-</section>
-
-<!-- CLAIM 5 -->
-<section class="block" id="c5">
-  <div class="bhead"><span class="eyebrow">Claim 5 · classic ML vs an off-the-shelf AI</span><span class="pill">everyone · vote first</span></div>
-  <h2>Can JEV replace our own model?</h2>
-  <p class="quote" data-claim="5"></p>
-  <p>JEV (TypeSafe) reads a record and answers a yes/no question with a probability, with no training at all. Before the cards, try being the model:</p>
-  <div class="rows">
-    <div><div class="eyebrow" style="margin-bottom:6px">Row A · a review</div>
-      <div class="review"><div class="stars">★★☆☆☆ hidden</div>"Love the color but it runs two sizes small and the fabric is see-through. Sending it back."</div>
-      <div class="guess">Would this reviewer recommend it? <span class="stamp holds">easy: no</span></div></div>
-    <div><div class="eyebrow" style="margin-bottom:6px">Row B · a customer</div>
-      <div class="trow"><span>months since last order</span><span>6</span><span>spent last year</span><span>$180.70</span><span>bought</span><span>Mens items</span><span>area · channel</span><span>Urban · Web</span><span>email received</span><span>Mens</span></div>
-      <div class="guess">Will this customer visit the site? <span class="stamp part">no idea</span></div></div>
-  </div>
-  <p style="margin-top:16px">Five real tasks. Pick a winner on each card, then it flips. <b id="score"></b></p>
-  <div class="cards" id="cards"></div>
-  <div class="rule">
-    <div class="yes"><b>Could a person answer from one row?</b>Then the knowledge is in language and common sense, and JEV already has it. Use it with no labels, calibrate it with a few, or let it label data for a small free model.</div>
-    <div class="no"><b>Does it need patterns from many rows?</b>Then the signal lives in <i>your</i> data, and only training finds it. Use classic ML (XGBoost, CatBoost).</div>
-  </div>
-  <button class="btn gold" data-reveal="5" type="button" style="margin-top:14px">Reveal the verdict</button>
-  <div class="answer" id="v5"><div class="tag">Answer · wrong for this task</div><div class="big">On these customers JEV scores like a coin flip (AUC 0.52).</div>
-    XGBoost trained on 42,194 customers reaches 0.61. Keep our own model for customers, and use JEV for text such as reviews and complaints, where it beat a model trained on 22,134 labels.</div>
-</section>
-
-<!-- OPS -->
-<section class="block dark" id="ops">
-  <div class="bhead"><span class="eyebrow">Operations · launch day</span><span class="pill">synthetic website data · same campaign</span></div>
-  <h2>Tuesday, 9 a.m. The email goes out.</h2>
-  <div class="timeline">
-    <div class="tstep"><div class="t">Tue 09:00</div><b>Email sent</b>20,000 inboxes, Mens email.</div>
-    <div class="tstep"><div class="t">Tue 10:00</div><b>The rush</b>Sessions jump from ~200 to over 3,000 an hour.</div>
-    <div class="tstep bad"><div class="t">Tue 19:00</div><b>Checkout breaks</b>Payment gateway times out: up to 32% of checkouts fail.</div>
-    <div class="tstep"><div class="t">Tue 22:00</div><b>Fixed</b>About <span id="lostTxt">$21k</span> of sales lost in 3 hours.</div>
-  </div>
-  <p>Gemma was asked for an alert rule. Pick the metric and the threshold the on-call engineer gets paged on.</p>
-  <div class="toolbar">
-    <button class="btn small on" data-m="sessions" type="button">Alert on traffic (sessions)</button>
-    <button class="btn small" data-m="err" type="button">Alert on failed checkouts (%)</button>
-  </div>
-  <div class="panel"><svg id="opsChart" viewBox="0 0 900 300" role="img" aria-label="Hourly website metric for the campaign week"></svg>
-    <div style="margin-top:8px"><label class="muted" for="thr">Page someone when it goes above <b id="thrV"></b></label><input type="range" id="thr"></div></div>
-  <div class="kpis">
-    <div class="kpi"><div class="v" id="oAlerts">–</div><div class="l">pages in the week</div></div>
-    <div class="kpi"><div class="v" id="oCaught">–</div><div class="l">checkout outage caught?</div></div>
-    <div class="kpi"><div class="v" id="oOther">–</div><div class="l">pages about something else</div></div>
-  </div>
-  <details open><summary>Gemma's alert rule (look at the highlighted line)</summary><pre id="alertCode"></pre>
-    <p class="muted" style="font-size:14.5px">It flags any hour where <code>incident == True</code>. That column exists only because we labeled the week afterwards, so the rule is reading the answer, the same leak as <code>spend</code>. The rest of its rule, "error rate above twice the 24-hour average", also fires on 19 quiet hours with error rates around 1%.</p></details>
-  <h3>The same week in a real Grafana dashboard</h3>
-  <div class="shot"><img src="img/grafana_dashboard.jpg" alt="Grafana dashboard: sessions spike after the email, checkout error rate spikes to 32% on Tuesday evening, about $21k lost" loading="lazy" width="2800" height="2220"></div>
-  <div class="caption">Screenshot of Grafana 11.3 running locally with this week's data (TestData source). Orange zone: the traffic rule. Red zone: the failed-checkout rule at 10%.</div>
-  <button class="btn gold" data-reveal="6" type="button" style="margin-top:16px">Reveal the verdict</button>
-  <div class="answer" id="v6"><div class="tag">Answer · watch customer pain, and know the calendar</div><div class="big">The traffic alert pages you for the campaign and sleeps through the outage.</div>
-    An alert on failed checkouts above 10% catches the outage and nothing else all week. The AI can write a rule in seconds; knowing that a campaign is running, which number measures customer pain, and which columns you will not have in real time is the team's job.</div>
-</section>
-
-<!-- SIGN-OFF -->
-<section class="block mint" id="signoff">
-  <div class="bhead"><span class="eyebrow">Sign-off</span><span class="pill">post in the Zoom chat</span></div>
-  <h2>"Send to ___, promise $___, because ___."</h2>
-  <div class="poll" id="poll2"><span class="muted">Your verdict now:</span><button class="btn" data-v="sign" type="button">Sign</button><button class="btn" data-v="changes" type="button">Sign with changes</button><button class="btn" data-v="reject" type="button">Reject</button><b id="pollCompare"></b></div>
-  <h3>The corrected memo</h3>
-  <table class="t">
-    <tr><th>#</th><th>Corrected claim</th><th>Status</th></tr>
-    <tr><td><span class="num">1</span></td><td>The Mens email works: +7.7 points in visits, about +$0.77 per customer (95% range $0.49 to $1.06).</td><td><span class="stamp holds">holds</span></td></tr>
-    <tr><td><span class="num">2</span></td><td>Drop the $0.22. <code>visit</code> is caused by the email, so controlling for it hides most of the effect.</td><td><span class="stamp wrong">wrong</span></td></tr>
-    <tr><td><span class="num">3</span></td><td>Urban / Web / new is a hypothesis from 18 tests. Test it again before moving budget.</td><td><span class="stamp part">hypothesis</span></td></tr>
-    <tr><td><span class="num">4</span></td><td>Expect about half the promise: on new customers, plans like this delivered a median 52%. Keep a random holdout group. And alert on failed checkouts: an outage on launch night cost about $21k.</td><td><span class="stamp wrong">too big</span></td></tr>
-    <tr><td><span class="num">5</span></td><td>Keep our own model for customers (JEV: AUC 0.52 here). Use JEV for text like reviews.</td><td><span class="stamp wrong">wrong here</span></td></tr>
-  </table>
-  <h3>Five questions for any AI-assisted analysis</h3>
-  <ul class="howto">
-    <li><span class="num">1</span><span>Who is in the data, and does anything look too clean or too odd?</span></li>
-    <li><span class="num">2</span><span>Was the treatment random, and was every control measured before it?</span></li>
-    <li><span class="num">3</span><span>How many tests or versions were tried before this one?</span></li>
-    <li><span class="num">4</span><span>Has the number been checked on data the plan has never seen?</span></li>
-    <li><span class="num">5</span><span>Could a person answer this from one row, or does it need patterns from many rows?</span></li>
-  </ul>
-</section>
-
-<div class="band"><h2>Don't sign blind.</h2><a class="btn gold" href="#top">Back to the top ↑</a></div>
-
-<footer>
-  Data: Kevin Hillstrom, <a href="https://blog.minethatdata.com/2008/03/minethatdata-e-mail-analytics-and-data.html">MineThatData E-Mail Analytics Challenge</a> (2008) ·
-  <a href="https://www.kaggle.com/datasets/nicapotato/womens-ecommerce-clothing-reviews">Women's E-Commerce Clothing Reviews</a> (Kaggle, CC0) · launch-day website data is synthetic.
-  Models: Gemma 4 on the Gemini API, JEV 1.14 (TypeSafe). Generative AI Lab, Fall 2026 · prepared by Rizaldy Utomo (TA). Everything runs in your browser; nothing is sent anywhere.
-</footer>
-</main>
-
-<script src="bundle.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
-<script>
-(() => {
-const D = window.LAB3;
-const $ = (s, el = document) => el.querySelector(s);
-const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-const store = {
-  get(k, d) { try { const v = localStorage.getItem("lab3:" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem("lab3:" + k, JSON.stringify(v)); } catch (e) {} }
-};
-const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
-const money = v => (v < 0 ? "−$" : "$") + Math.abs(Math.round(v)).toLocaleString("en-US");
-const SVGNS = "http://www.w3.org/2000/svg";
-const el = (tag, attrs = {}, text) => { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; };
-const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
-
-// ---------- tiny markdown ----------
-function inline(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|[^*])\*([^*\s][^*]*?)\*/g, "$1<i>$2</i>").replace(/`([^`]+)`/g, "<code>$1</code>"); }
-function md(text) {
-  const out = []; let list = null; const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
-  for (const raw of text.split("\n")) { const line = raw.trimEnd(); let m;
-    if (!line.trim()) { close(); continue; }
-    if ((m = line.match(/^#{1,4}\s+(.*)/))) { close(); out.push(`<h3>${inline(m[1])}</h3>`); continue; }
-    if ((m = line.match(/^\s*(\d+)\.\s+(.*)/))) { if (list !== "ol") { close(); out.push(`<ol start="${m[1]}">`); list = "ol"; } out.push(`<li>${inline(m[2])}</li>`); continue; }
-    if ((m = line.match(/^\s*[*-]\s+(.*)/))) { if (list !== "ul") { close(); out.push("<ul>"); list = "ul"; } out.push(`<li>${inline(m[1])}</li>`); continue; }
-    if (line.trim().startsWith("$$")) { close(); out.push(`<p>${esc(line)}</p>`); continue; }
-    close(); out.push(`<p>${inline(line)}</p>`); }
-  close(); return out.join("");
-}
-
-// ---------- verdict state ----------
-const STATUS = {1: ["holds", "holds"], 2: ["wrong", "wrong"], 3: ["part", "hypothesis"], 4: ["wrong", "too big"], 5: ["wrong", "wrong here"]};
-const claims = {}; let subject = "", intro = [], outro = [];
-for (const l of D.memo.split("\n").filter(l => l.trim())) {
-  const m = l.match(/^\s*\**(\d)\.\**\s+(.*)/);
-  if (m) claims[m[1]] = m[2].replace(/\*\*/g, "");
-  else if (!subject && /subject/i.test(l)) subject = l.replace(/\*\*/g, "").replace(/^#+\s*/, "").replace(/^Subject:\s*/i, "");
-  else if (!Object.keys(claims).length) intro.push(l); else outro.push(l);
-}
-function renderMemo() {
-  const r = store.get("revealed", {});
-  $("#memoBox").innerHTML = `<div class="from"><span>FROM · junior analyst (drafted by Gemma 4)</span><span>TO · marketing director</span></div>
-    <div class="subject">${inline(subject)}</div>${intro.map(l => `<p>${inline(l)}</p>`).join("")}
-    <ol>${[1,2,3,4,5].map(i => `<li data-go="${i}"><span>${inline(claims[i] || "")}${r[i] ? `<span class="stamp ${STATUS[i][0]}">${STATUS[i][1]}</span>` : ""}</span></li>`).join("")}</ol>
-    ${outro.map(l => `<p>${inline(l)}</p>`).join("")}`;
-  $$("#memoBox li").forEach(li => li.onclick = () => location.hash = "#c" + li.dataset.go);
-  $$(".quote[data-claim]").forEach(q => q.textContent = "“" + (claims[q.dataset.claim] || "") + "”");
-  $$("#nav a[data-c]").forEach(a => { a.className = r[a.dataset.c] ? STATUS[a.dataset.c][0] : ""; });
-  $$(".answer").forEach(v => v.classList.toggle("show", !!r[v.id.slice(1)]));
-}
-$$("[data-reveal]").forEach(b => b.onclick = () => { const r = store.get("revealed", {}); r[b.dataset.reveal] = true; store.set("revealed", r); renderMemo(); });
-function poll(id, key) {
-  const box = $(id);
-  const paint = () => { const v = store.get(key, null); $$("button", box).forEach(b => b.classList.toggle("on", b.dataset.v === v));
-    const a = store.get("poll1", null), z = store.get("poll2", null), nm = {sign: "Sign", changes: "Sign with changes", reject: "Reject"};
-    const pc = $("#pollCompare"); if (pc) pc.textContent = a && z ? (a === z ? `Same as at the start.` : `You moved from “${nm[a]}” to “${nm[z]}”.`) : ""; };
-  $$("button", box).forEach(b => b.onclick = () => { store.set(key, b.dataset.v); paint(); }); paint();
-}
-
-// ---------- 00 · experiment animation ----------
-const how = { t0: 0, raf: 0 };
-function sizeCanvas(c) { const r = c.getBoundingClientRect(), dpr = devicePixelRatio || 1; c.width = r.width * dpr; c.height = parseInt(c.getAttribute("height")) * dpr; c.style.height = c.getAttribute("height") + "px"; return dpr; }
-const HOW_STEPS = ["64,000 past customers who bought something in the last year.",
-  "A coin flip puts each one into a group: Mens email, Womens email, or no email.",
-  "Two groups get an email on the same day. The third group gets nothing, so it shows what would have happened anyway.",
-  "Two weeks later: who visited the site (blue) and who bought (gold)? The difference between the groups is the effect of the email."];
-function howDraw() {
-  const c = $("#howCanvas"), Wc = c.getBoundingClientRect().width;
-  { const cw = Wc / 3, cs = Math.max(10, Math.min(18, Math.floor((cw - 30) / 11))), ce = Math.min(11, (cw - 30) / cs);
-    c.setAttribute("height", Math.round(72 + Math.ceil(225 / cs) * ce + 64)); }
-  const dpr = sizeCanvas(c), ctx = c.getContext("2d"), W = c.width / dpr, H = c.height / dpr;
-  const N = 640, R = rng(7), groups = [], dots = [];
-  for (let i = 0; i < N; i++) dots.push({ x0: W / 2 + (R() - .5) * W * .6, y0: 70 + R() * Math.max(60, H - 160), g: Math.floor(R() * 3) });
-  const counts = [0, 0, 0]; dots.forEach(d => d.k = counts[d.g]++);
-  const names = ["Mens email", "Womens email", "No email"], arms = ["mens", "womens", "none"];
-  const visitN = arms.map((a, g) => Math.round(counts[g] * D.arms[a].visit)), buyN = arms.map((a, g) => Math.max(1, Math.round(counts[g] * D.arms[a].conversion)));
-  const colW = W / 3, cols = Math.max(10, Math.min(18, Math.floor((colW - 30) / 11))), cell = Math.min(11, (colW - 30) / cols);
-  dots.forEach(d => { const cx = d.g * colW + (colW - cols * cell) / 2, row = Math.floor(d.k / cols);
-    d.x1 = cx + (d.k % cols) * cell + cell / 2; d.y1 = 72 + row * cell; d.visit = d.k < visitN[d.g]; d.buy = d.k < buyN[d.g]; });
-  // shuffle which dots are visitors so they don't sit in the first rows
-  [0, 1, 2].forEach(g => { const ds = dots.filter(d => d.g === g), R2 = rng(11 + g); for (let i = ds.length - 1; i > 0; i--) { const j = Math.floor(R2() * (i + 1)); [ds[i].visit, ds[j].visit] = [ds[j].visit, ds[i].visit]; [ds[i].buy, ds[j].buy] = [ds[j].buy, ds[i].buy]; } });
-  cancelAnimationFrame(how.raf); how.t0 = performance.now();
-  const ease = t => t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t);
-  function frame(now) {
-    const t = reduced ? 99 : (now - how.t0) / 1000;
-    const step = t < 1.4 ? 0 : t < 3.6 ? 1 : t < 6 ? 2 : 3;
-    $("#howCaption").textContent = HOW_STEPS[step];
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
-    const move = ease((t - 1.4) / 1.8);
-    ctx.font = "700 15px 'Bricolage Grotesque', sans-serif"; ctx.textAlign = "center";
-    if (t > 1.6) names.forEach((n, g) => { ctx.globalAlpha = ease((t - 1.6) / .6); ctx.fillStyle = "#eaf6f0"; ctx.fillText(n, g * colW + colW / 2, 52); ctx.globalAlpha = 1; });
-    dots.forEach(d => {
-      const x = d.x0 + (d.x1 - d.x0) * move, y = d.y0 + (d.y1 - d.y0) * move;
-      let col = "#4f7d75"; const lit = ease((t - 6.2 - (d.k % 40) * .02) / .5);
-      if (lit > 0 && d.visit) col = lit > .5 ? "#4ee1d2" : "#4f7d75";
-      if (lit > 0 && d.buy) col = lit > .5 ? "#f2bd51" : col;
-      ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, (d.buy && lit > .5) ? cell * .55 : cell * .36, 0, 7); ctx.fill();
-    });
-    // envelopes
-    if (t > 3.8 && t < 6.4) [0, 1].forEach(g => { for (let e = 0; e < 5; e++) { const p = ease((t - 3.8 - e * .18) / 1.2); if (p <= 0 || p >= 1) continue;
-      const x = g * colW + colW / 2 + (e - 2) * 26, y = 8 + p * 110; ctx.globalAlpha = 1 - Math.max(0, p - .8) * 5;
-      ctx.fillStyle = "#fff8e8"; ctx.fillRect(x - 11, y - 7, 22, 15); ctx.strokeStyle = "#d88a25"; ctx.lineWidth = 1.5; ctx.strokeRect(x - 11, y - 7, 22, 15);
-      ctx.beginPath(); ctx.moveTo(x - 11, y - 7); ctx.lineTo(x, y + 2); ctx.lineTo(x + 11, y - 7); ctx.stroke(); ctx.globalAlpha = 1; } });
-    if (t > 7) names.forEach((n, g) => { const a = D.arms[arms[g]]; ctx.globalAlpha = ease((t - 7) / .6);
-      ctx.fillStyle = "#4ee1d2"; ctx.font = "800 22px 'Bricolage Grotesque', sans-serif"; ctx.fillText((a.visit * 100).toFixed(1) + "% visited", g * colW + colW / 2, H - 34);
-      ctx.fillStyle = "#f2bd51"; ctx.font = "500 13px 'DM Mono', monospace"; ctx.fillText((a.conversion * 100).toFixed(2) + "% bought · $" + a.spend.toFixed(2) + " each", g * colW + colW / 2, H - 12); ctx.globalAlpha = 1; });
-    if (t < 8.5) how.raf = requestAnimationFrame(frame);
-  }
-  how.raf = requestAnimationFrame(frame);
-}
-const howObs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting && !how.played) { how.played = true; howDraw(); } }), {threshold: .35});
-
-// ---------- claim 1 · waffles ----------
-let c1o = "visit";
-function drawC1() {
-  const arms = [["mens", "Mens email"], ["womens", "Womens email"], ["none", "No email"]];
-  $("#waffles").innerHTML = arms.map(([a, n]) => { const v = D.arms[a][c1o], on = c1o === "visit" ? Math.round(v * 100) : Math.round(v * 1000);
-    const cells = c1o === "visit" ? 100 : 100, per = c1o === "visit" ? "1 square = 1% of the group" : "1 square = 0.1% of the group";
-    return `<div><div class="waffle ${a}">${Array.from({length: cells}, (_, i) => `<i class="${i < on ? "on" : ""}"></i>`).join("")}</div>
-      <div class="wlabel">${n}</div><div class="wval">${(v * 100).toFixed(c1o === "visit" ? 1 : 2)}%</div><div class="muted" style="font-size:12px">${per}</div></div>`; }).join("");
-  const d = D.arms.mens[c1o + "_diff"], f = v => (v >= 0 ? "+" : "") + (v * 100).toFixed(2) + " points";
-  $("#c1Note").textContent = `Mens email vs no email: ${f(d[0])} (95% range ${f(d[1])} to ${f(d[2])}). Each group has about 21,300 customers. Spend: +$${D.arms.mens.spend_diff[0].toFixed(2)} per customer (95% range $${D.arms.mens.spend_diff[1].toFixed(2)} to $${D.arms.mens.spend_diff[2].toFixed(2)}).`;
-}
-$$("#c1Out button").forEach(b => b.onclick = () => { c1o = b.dataset.o; $$("#c1Out button").forEach(x => x.classList.toggle("on", x === b)); drawC1(); });
-
-// ---------- claim 2 · causal diagram + bars ----------
-let gate = true;
-function drawC2() {
-  const svg = $("#dag"); svg.replaceChildren();
-  const ink = css("--ink"), teal = css("--teal"), coral = css("--coral"), card = css("--card");
-  const defs = el("defs"); const mk = (id, c) => { const m = el("marker", {id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto"}); m.append(el("path", {d: "M0,0 L10,5 L0,10 z", fill: c})); return m; };
-  defs.append(mk("ah", ink), mk("ahOff", css("--line"))); svg.append(defs);
-  const node = (x, y, label, sub, fill) => { svg.append(el("rect", {x: x - 62, y: y - 30, width: 124, height: 60, rx: 18, fill, stroke: ink, "stroke-width": 1.5}));
-    const t = el("text", {x, y: y + 2, "text-anchor": "middle", style: `font:800 18px 'Bricolage Grotesque';fill:${ink}`}, label); svg.append(t);
-    svg.append(el("text", {x, y: y + 20, "text-anchor": "middle"}, sub)); };
-  const arrow = (x1, y1, x2, y2, on) => svg.append(el("line", {x1, y1, x2, y2, stroke: on ? ink : css("--line"), "stroke-width": on ? 3 : 2, "stroke-dasharray": on ? "" : "6 6", "marker-end": on ? "url(#ah)" : "url(#ahOff)"}));
-  arrow(122, 175, 198, 82, !gate); arrow(322, 82, 398, 175, !gate);
-  node(70, 190, "Email", "random", css("--gold-hi")); node(260, 70, "Visit", "after the email", gate ? css("--coral-soft") : card); node(450, 190, "Spend", "what we measure", css("--mint"));
-  if (gate) { svg.append(el("line", {x1: 216, y1: 22, x2: 304, y2: 118, stroke: coral, "stroke-width": 5, "stroke-linecap": "round"}));
-    svg.append(el("line", {x1: 304, y1: 22, x2: 216, y2: 118, stroke: coral, "stroke-width": 5, "stroke-linecap": "round"}));
-    svg.append(el("text", {x: 260, y: 142, "text-anchor": "middle", style: `fill:${coral};font-weight:600`}, "held fixed: the road is blocked")); }
-  else svg.append(el("text", {x: 260, y: 142, "text-anchor": "middle"}, "the email works through the visit"));
-  $("#gateBtn").textContent = "Control for visit: " + (gate ? "ON" : "OFF"); $("#gateBtn").classList.toggle("on", gate);
-  // bars
-  const on = $$("#c2Checks input").filter(i => i.checked).map(i => i.value).concat(gate ? ["visit"] : []);
-  const key = ["recency", "history", "newbie", "visit"].filter(k => on.includes(k)).join("|"), r = D.regression[key];
-  const b = $("#c2Bars"); b.replaceChildren();
-  const x = v => 120 + 320 * (v + .1) / 1.3;
-  [0, .25, .5, .75, 1].forEach(t => { b.append(el("line", {x1: x(t), x2: x(t), y1: 6, y2: 106, stroke: css("--line-soft")})); b.append(el("text", {x: x(t), y: 124, "text-anchor": "middle"}, "$" + t.toFixed(2))); });
-  [["mens", "Mens email", teal, 30], ["womens", "Womens email", css("--gold"), 76]].forEach(([k, n, c, y]) => { const [m, lo, hi] = r[k];
-    b.append(el("text", {x: 112, y: y + 5, "text-anchor": "end", style: `font:700 14px Manrope;fill:${ink}`}, n));
-    b.append(el("rect", {x: x(0), y: y - 13, width: Math.max(2, x(m) - x(0)), height: 26, rx: 8, fill: c, style: "transition:width .5s"}));
-    b.append(el("line", {x1: x(lo), x2: x(hi), y1: y, y2: y, stroke: ink, "stroke-width": 2}));
-    b.append(el("text", {x: x(Math.max(m, hi)) + 8, y: y + 5, style: `font:800 16px 'Bricolage Grotesque';fill:${ink}`}, "+$" + m.toFixed(2))); });
-}
-$("#gateBtn").onclick = () => { gate = !gate; drawC2(); };
-$$("#c2Checks input").forEach(i => i.onchange = drawC2);
-
-// ---------- claim 3 · lottery tickets ----------
-let scratched = false, bonf = false;
-function drawC3() {
-  const cut = bonf ? 0.05 / D.fish.length : 0.05;
-  $("#tickets").innerHTML = D.fish.map((f, i) => { const win = scratched && f.p_value < cut;
-    return `<div class="ticket ${scratched ? "scratched" : ""} ${win ? "win" : ""} ${scratched && i === 0 ? "pick" : ""}">
-      <div class="who">${f.zip_code} · ${f.channel} · ${f.newbie ? "new" : "returning"}</div>
-      <div class="p">p = ${f.p_value.toFixed(4)}${win ? " ★" : ""}</div><div class="foil"></div></div>`; }).join("");
-  const n = D.fish.filter(f => f.p_value < cut).length;
-  $("#c3Note").textContent = scratched ? `${n} of ${D.fish.length} tickets win at the ${bonf ? "corrected cutoff 0.05 / 18 = 0.0028" : "usual 0.05 cutoff"}. The outlined ticket is the memo's pick.` : "Scratch the tickets to see each test's p-value.";
-  $("#bonfBtn").classList.toggle("on", bonf); $("#bonfBtn").disabled = !scratched;
-}
-$("#scratch").onclick = () => { scratched = true; drawC3(); };
-$("#bonfBtn").onclick = () => { bonf = !bonf; drawC3(); };
-
-// ---------- claim 4 · split machine ----------
-$("#lpBox").innerHTML = md(D.lp_answer);
-const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], dim = [31,29,31,30,31,30,31,31,30,31,30,31];
-$("#bdMonth").innerHTML = months.map((m, i) => `<option value="${i + 1}">${m}</option>`).join("");
-const bd = store.get("birthday", [12, 25]); let use = "point";
-function fillDays() { const m = +$("#bdMonth").value, cur = +$("#bdDay").value || bd[1];
-  $("#bdDay").innerHTML = Array.from({length: dim[m - 1]}, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join(""); $("#bdDay").value = Math.min(cur, dim[m - 1]); }
-$("#bdMonth").value = bd[0]; fillDays(); $("#bdDay").value = bd[1];
-const prettySeg = s => { const [h, b, n] = s.split("|"); return ({under_100: "<$100", "100_to_500": "$100–500", "500_plus": "$500+"})[h] + " · " + ({mens_only: "Mens buyer", womens_only: "Womens buyer", both: "both"})[b] + " · " + n; };
-function drawC4() {
-  const m = +$("#bdMonth").value, d = +$("#bdDay").value, seed = m * 100 + d; store.set("birthday", [m, d]);
-  const mine = D.splits[use][seed];
-  $("#kPromise").textContent = money(mine[0]); $("#kDeliver").textContent = money(mine[1]); $("#kRandom").textContent = money(mine[3]);
-  $("#c4Chat").innerHTML = `Seed <code>${seed}</code> (same as <code>SEED = ${seed}</code> in the notebook): the plan delivered <b>${Math.round(100 * mine[1] / mine[0])}%</b> of its promise. Post in chat: <b>promised $${Math.round(mine[0] / 1000)}k, delivered $${Math.round(mine[1] / 1000)}k</b>.`;
-  // segment bars
-  const rows = D.plans[use][seed].slice().sort((a, b) => b[3] - a[3]), svg = $("#segBars"); svg.replaceChildren();
-  const ink = css("--ink"), L = 190, Rr = 540, lo = -1.5, hi = Math.max(3, ...rows.map(r => Math.max(r[3], r[4]))) + .2;
-  const x = v => L + (Rr - L) * (v - lo) / (hi - lo), rowH = 30;
-  for (let t = -1; t <= hi; t += 1) { svg.append(el("line", {x1: x(t), x2: x(t), y1: 0, y2: rows.length * rowH, stroke: t === 0 ? css("--muted") : css("--line-soft")})); svg.append(el("text", {x: x(t), y: rows.length * rowH + 16, "text-anchor": "middle"}, (t < 0 ? "−$" : "$") + Math.abs(t))); }
-  rows.forEach((r, i) => { const y = i * rowH + 4, picked = r[2] === 1;
-    if (picked) svg.append(el("rect", {x: 0, y: y - 2, width: Rr + 14, height: rowH - 2, rx: 8, fill: css("--gold-soft")}));
-    svg.append(el("text", {x: L - 8, y: y + 15, "text-anchor": "end", style: `font:${picked ? 700 : 500} 12px Manrope;fill:${ink}`}, prettySeg(D.segments[r[0]]) + (r[1] ? " (W)" : " (M)")));
-    const bar = (v, yy, c) => svg.append(el("rect", {x: Math.min(x(0), x(v)), y: yy, width: Math.abs(x(v) - x(0)), height: 10, rx: 4, fill: c}));
-    bar(r[3], y + 2, css("--mint")); bar(r[4], y + 13, css("--teal"));
-    if (picked) svg.append(el("circle", {cx: Rr + 6, cy: y + 12, r: 5, fill: css("--gold-hi"), stroke: ink, "stroke-width": 1.5})); });
-  const pk = rows.filter(r => r[2]), avg = k => pk.reduce((s, r) => s + r[k], 0) / Math.max(pk.length, 1);
-  $("#segSummary").textContent = `For your birthday, the ${pk.length} picked segments averaged +$${avg(3).toFixed(2)} per email on half A and +$${avg(4).toFixed(2)} on half B.`;
-  // scatter
-  const pts = Object.values(D.splits[use]), sv = $("#scatter"); sv.replaceChildren();
-  const top = Math.max(...Object.values(D.splits.point).map(p => Math.max(p[0], p[1]))) / 1000 * 1.04, bot = Math.min(0, ...pts.map(p => p[1] / 1000));
-  const sx = v => 46 + 360 * v / top, sy = v => 10 + 280 * (top - v) / (top - bot);
-  for (let t = 0; t <= top; t += 10) { sv.append(el("line", {x1: sx(t), x2: sx(t), y1: 10, y2: 290, stroke: css("--line-soft")})); sv.append(el("text", {x: sx(t), y: 306, "text-anchor": "middle"}, "$" + t + "k"));
-    if (t >= bot) { sv.append(el("line", {x1: 46, x2: 406, y1: sy(t), y2: sy(t), stroke: css("--line-soft")})); sv.append(el("text", {x: 40, y: sy(t) + 4, "text-anchor": "end"}, "$" + t + "k")); } }
-  sv.append(el("line", {x1: sx(0), y1: sy(0), x2: sx(top), y2: sy(top), stroke: css("--muted"), "stroke-dasharray": "5 5"}));
-  sv.append(el("text", {x: 226, y: 324, "text-anchor": "middle"}, "promised (half A)"));
-  pts.forEach(p => sv.append(el("circle", {cx: sx(p[0] / 1000), cy: sy(p[1] / 1000), r: 3, fill: css("--teal"), opacity: .4})));
-  sv.append(el("circle", {cx: sx(mine[0] / 1000), cy: sy(mine[1] / 1000), r: 8, fill: css("--coral"), stroke: css("--ink"), "stroke-width": 1.5}));
-  $("#v4share").textContent = Math.round(100 * pts.filter(p => p[1] < p[0]).length / pts.length) + "%";
-}
-$("#bdMonth").onchange = () => { fillDays(); drawC4(); }; $("#bdDay").onchange = drawC4;
-$$("[data-use]").forEach(b => b.onclick = () => { use = b.dataset.use; $$("[data-use]").forEach(x => x.classList.toggle("on", x === b)); drawC4(); });
-
-// ---------- claim 5 · cards ----------
-function renderCards() {
-  const picks = store.get("cards", {});
-  $("#cards").innerHTML = D.cards.map((c, i) => { const p = picks[i], fl = p !== undefined, wc = /^Classic/.test(c.winner), wj = /^JEV/.test(c.winner);
-    const right = fl && ((p === "classic" && wc) || (p === "jev" && wj));
-    return `<div class="gcard ${fl ? "flipped " + (right ? "right" : "miss") : ""}" data-i="${i}"><div class="in">
-      <div class="face"><div class="d">Card ${i + 1} · ${esc(c.data)}</div><div class="q">${inline(c.task)}</div>
-        <div class="toolbar" style="margin-top:auto"><button class="btn small" data-p="classic" type="button">Classic ML</button><button class="btn small" data-p="jev" type="button">JEV</button></div></div>
-      <div class="face back"><div class="d">Card ${i + 1} · ${right ? "you called it" : (wc || wj ? "not this time" : "trick card")}</div>
-        <div class="win">${inline(c.winner)}</div><div class="r">Classic: ${inline(c["classic ML"])}</div><div class="r">JEV: ${inline(c.JEV)}</div></div></div></div>`; }).join("");
-  $$("#cards .gcard").forEach(g => $$("[data-p]", g).forEach(b => b.onclick = () => { const pk = store.get("cards", {}); pk[g.dataset.i] = b.dataset.p; store.set("cards", pk); renderCards(); }));
-  const done = Object.keys(picks).length, score = D.cards.reduce((s, c, i) => s + ((picks[i] === "classic" && /^Classic/.test(c.winner)) || (picks[i] === "jev" && /^JEV/.test(c.winner)) ? 1 : 0), 0);
-  $("#score").textContent = done ? `Your score: ${score} of ${done}.` : "";
-}
-
-// ---------- ops · launch day ----------
-const O = D.ops, n = O.sessions.length; let metric = "sessions";
-$("#lostTxt").textContent = "$" + Math.round(O.lost / 1000) + "k";
-$("#alertCode").innerHTML = esc(D.alert_code).split("\n").map(l => /incident/.test(l) ? `<mark>${l}</mark>` : l).join("\n");
-const MET = { sessions: {arr: O.sessions, min: 1500, max: 3400, step: 100, def: 2500, fmt: v => Math.round(v).toLocaleString() + " sessions/h"},
-              err: {arr: O.err, min: 1, max: 20, step: .5, def: 10, fmt: v => v.toFixed(1) + "% failed"} };
-function setMetric(m) { metric = m; const M = MET[m], t = $("#thr"); t.min = M.min; t.max = M.max; t.step = M.step; t.value = M.def;
-  $$("[data-m]").forEach(b => b.classList.toggle("on", b.dataset.m === m)); drawOps(); }
-function drawOps() {
-  const M = MET[metric], arr = M.arr, thr = +$("#thr").value; $("#thrV").textContent = M.fmt(thr);
-  const fired = arr.map(v => v > thr), first = fired.map((f, i) => f && !fired[i - 1]);
-  const pages = first.filter(Boolean).length, inc = O.incident, caught = inc.some((v, i) => v && fired[i]);
-  const other = first.filter((f, i) => f && !inc[i]).length;
-  $("#oAlerts").textContent = pages; $("#oCaught").textContent = caught ? "yes" : "no"; $("#oCaught").style.color = caught ? css("--teal") : css("--coral");
-  $("#oOther").textContent = other;
-  const svg = $("#opsChart"); svg.replaceChildren();
-  const W = 900, H = 300, L = 54, R = 10, T = 14, B = 34, mx = Math.max(...arr, thr) * 1.12;
-  const x = i => L + (W - L - R) * i / (n - 1), y = v => T + (H - T - B) * (1 - v / mx);
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  // incident band + send line
-  const i0 = inc.indexOf(1), i1 = inc.lastIndexOf(1);
-  svg.append(el("rect", {x: x(i0) - 3, y: T, width: x(i1) - x(i0) + 6, height: H - T - B, fill: css("--coral"), opacity: .18}));
-  svg.append(el("line", {x1: x(O.send_index), x2: x(O.send_index), y1: T, y2: H - B, stroke: css("--gold-hi"), "stroke-width": 2, "stroke-dasharray": "6 5"}));
-  svg.append(el("text", {x: x(O.send_index) + 6, y: T + 12, style: `fill:${css("--gold-hi")};font-weight:500`}, "email sent"));
-  svg.append(el("text", {x: x(i1) + 8, y: T + 30, style: `fill:${css("--coral")};font-weight:500`}, "checkout outage"));
-  for (let dd = 0; dd < 7; dd++) { svg.append(el("line", {x1: x(dd * 24), x2: x(dd * 24), y1: T, y2: H - B, stroke: "rgba(255,255,255,.08)"})); svg.append(el("text", {x: x(dd * 24 + 12), y: H - 12, "text-anchor": "middle"}, days[dd])); }
-  [0, .25, .5, .75, 1].forEach(f => { const v = mx * f; svg.append(el("text", {x: L - 6, y: y(v) + 4, "text-anchor": "end"}, metric === "err" ? v.toFixed(0) + "%" : (v / 1000).toFixed(1) + "k")); });
-  const path = arr.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
-  svg.append(el("path", {d: path + `L${x(n - 1)},${y(0)}L${x(0)},${y(0)}Z`, fill: metric === "err" ? css("--coral") : css("--aqua"), opacity: .15}));
-  svg.append(el("path", {d: path, fill: "none", stroke: metric === "err" ? css("--coral") : css("--aqua"), "stroke-width": 2}));
-  svg.append(el("rect", {x: L, y: T, width: W - L - R, height: Math.max(0, y(thr) - T), fill: css("--gold-hi"), opacity: .07}));
-  svg.append(el("line", {x1: L, x2: W - R, y1: y(thr), y2: y(thr), stroke: css("--gold-hi"), "stroke-width": 1.5}));
-  first.forEach((f, i) => { if (f) { const c = inc[i] ? css("--coral") : css("--gold-hi"); svg.append(el("path", {d: `M${x(i)} ${y(arr[i]) - 6} l-7 -12 h14 z`, fill: c, stroke: "#0a1716", "stroke-width": 1})); } });
-}
-$("#thr").oninput = drawOps;
-$$("[data-m]").forEach(b => b.onclick = () => setMetric(b.dataset.m));
-
-// ---------- start ----------
-$("#resetBtn").onclick = () => { ["revealed", "cards", "poll1", "poll2"].forEach(k => store.set(k, k === "revealed" || k === "cards" ? {} : null)); scratched = false; bonf = false; gate = true; drawAll(); location.hash = "#how"; how.played = true; howDraw(); };
-$("#howReplay").onclick = howDraw;
-$("#themeBtn").onclick = () => { const r = document.documentElement, dark = getComputedStyle(r).colorScheme === "dark"; r.dataset.theme = dark ? "light" : "dark"; store.set("theme", r.dataset.theme); drawAll(); };
-const th = store.get("theme", null); if (th) document.documentElement.dataset.theme = th;
-function drawAll() { renderMemo(); poll("#poll", "poll1"); poll("#poll2", "poll2"); drawC1(); drawC2(); drawC3(); drawC4(); renderCards(); setMetric(metric); }
-drawAll();
-howObs.observe($("#how"));
-let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (how.played) howDraw(); }, 250); });
-const renderTex = () => window.renderMathInElement && renderMathInElement($("#lpBox"), {delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}], throwOnError: false});
-if (window.renderMathInElement) renderTex(); else addEventListener("load", renderTex);
-})();
-</script>
-</body>
-</html>
+:root{--blue2:#1cb0f6;--blue2-dark:#1899d6;--orange:#ff9600;--orange-dark:#cd7900;--red2:#ff4b4b;--purple2:#ce82ff;--gold2:#ffc800;--green-edge:#58a700}
+.ic{width:1em;height:1em;display:inline-block;vertical-align:-.15em;fill:currentColor;flex:none}
+.number{width:64px;height:64px;font-size:30px;color:#fff;box-shadow:0 6px 0 var(--green-edge);margin-bottom:22px}
+.number.n2{background:var(--blue2);box-shadow:0 6px 0 var(--blue2-dark)}
+.number.n3{background:var(--orange);box-shadow:0 6px 0 var(--orange-dark)}
+.number.n4{background:var(--purple2);box-shadow:0 6px 0 #a568cc}
+.path a{transition:transform .12s}.path a:hover{transform:translateY(-3px)}
+.path .number{width:58px;height:58px;font-size:28px}
+.bell{color:#fff;box-shadow:0 5px 0 var(--green-edge)}.bell .ic{font-size:30px}
+.push{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted);margin-bottom:10px}.push .ic{color:var(--green)}
+.streak{display:flex;align-items:center;gap:6px;font-weight:900;color:var(--orange);white-space:nowrap}.streak .ic{font-size:24px}
+.gem{color:var(--blue2)}
+.progress{height:18px;border-radius:10px}.progress span{background:var(--green);box-shadow:inset 0 -5px 0 rgba(255,255,255,.0),inset 0 4px 0 rgba(255,255,255,.35)}
+.feedback.correct{background:#d7ffb8;border:0;color:#3d7a00}.feedback.retry{background:#ffdfe0;border:0;color:#c62b2b}
+.feedback{font-weight:800;display:none;gap:12px;align-items:flex-start}.feedback.show{display:flex}.feedback .ic{font-size:28px;margin-top:2px}
+.quiz button{border-radius:16px}.quiz button:hover{border-color:var(--blue2)}
+.tip{border-left:0;border:2px solid var(--line);border-radius:16px;display:flex;gap:12px;align-items:flex-start}.tip>.ic{color:var(--gold2);font-size:26px}
+.duo2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+.ai-card{border:2px solid var(--line);border-bottom-width:6px;border-radius:22px;padding:24px}
+.ai-card h3{display:flex;align-items:center;gap:12px}.ai-card h3 .badge-ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;font-size:26px}
+.ai-card.gemma .badge-ic{background:var(--purple2);box-shadow:0 4px 0 #a568cc}.ai-card.jev .badge-ic{background:var(--blue2);box-shadow:0 4px 0 var(--blue2-dark)}
+.ai-card ul{padding-left:20px;margin:10px 0}.ai-card li{margin:6px 0}
+.ladder{display:grid;gap:16px;margin:20px 0}.rung{display:grid;grid-template-columns:minmax(0,1.3fr) 2fr 80px;gap:14px;align-items:center}
+.rung .track{position:relative;height:30px;background:var(--surface);border-radius:10px}.rung .zero{position:absolute;left:50%;top:-6px;bottom:-6px;border-left:3px dashed var(--muted)}
+.rung .fill{position:absolute;top:0;bottom:0;border-radius:9px}.rung .fill.up{left:50%;background:var(--green);box-shadow:inset 0 -4px 0 var(--green-edge)}.rung .fill.down{right:50%;background:var(--red2);box-shadow:inset 0 -4px 0 #d33131}
+.rung b.val{font-size:20px;text-align:right}.rung small{display:block;color:var(--muted);font-size:13px}
+.bandit{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}.bandit div{border:2px solid var(--line);border-radius:18px;padding:16px;text-align:center}.bandit .ic{font-size:40px;display:block;margin:0 auto 8px}.bandit div:nth-child(1) .ic{color:var(--purple2)}.bandit div:nth-child(2) .ic{color:var(--green)}.bandit div:nth-child(3) .ic{color:var(--orange)}.bandit b{display:block}
+.only-tag{display:inline-block;background:var(--orange);color:#fff;border-radius:8px;padding:1px 7px;font-size:11px;margin-left:6px;vertical-align:2px}
+.disclaim{font-size:13px;color:var(--muted);margin-top:10px}
+@media(max-width:700px){.duo2,.bandit{grid-template-columns:1fr}.rung{grid-template-columns:1fr 70px}.rung .track{grid-column:1/-1;grid-row:2}.number{width:54px;height:54px;font-size:26px}.streak span{display:none}}
+</style></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 2a1.6 1.6 0 0 1 1.6 1.6v.6a6.6 6.6 0 0 1 5 6.4v4l2 2.9V19H3.4v-1.5l2-2.9v-4a6.6 6.6 0 0 1 5-6.4v-.6A1.6 1.6 0 0 1 12 2zM9.3 20.3h5.4a2.7 2.7 0 0 1-5.4 0z"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24"><path d="M12.6 1.8c.8 3.6 5.9 5.9 5.9 12a6.5 6.5 0 0 1-13 0c0-3.1 1.6-5.2 3.3-6.8.1 2 .9 3.3 2.2 3.8-.4-3.2.2-6.3 1.6-9z"/><path d="M12 13.2c.4 1.6 2.6 2.4 2.6 4.6a2.6 2.6 0 0 1-5.2 0c0-1.3.7-2.2 1.4-2.8.1.7.4 1.1.9 1.3-.2-1.1 0-2.2.3-3.1z" fill="#ffc800"/></symbol>
+<symbol id="i-gem" viewBox="0 0 24 24"><path d="M6.5 3h11l4.5 6-10 12.5L2 9z"/><path d="M2 9h20M8.5 3 7 9l5 12.5L17 9l-1.5-6" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.4"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="12" cy="12" r="1.9"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><rect x="3" y="12" width="4.5" height="9" rx="1.6"/><rect x="9.75" y="7" width="4.5" height="14" rx="1.6"/><rect x="16.5" y="3" width="4.5" height="18" rx="1.6"/></symbol>
+<symbol id="i-rocket" viewBox="0 0 24 24"><path d="M12 1.5c3.8 2.1 6 6 6 10.6l-2.3 3.4H8.3L6 12.1C6 7.5 8.2 3.6 12 1.5zm0 6.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4zM6 14l1.6 2.6-3.6 3V16zm12 0 2 2v3.6l-3.6-3zM9.6 17h4.8L12 22.5z"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><path d="M6.5 2.5h11V4H21v2.6a5 5 0 0 1-4.6 5A5.2 5.2 0 0 1 13.2 15v2.5h3.3V21h-9v-3.5h3.3V15a5.2 5.2 0 0 1-3.2-3.4A5 5 0 0 1 3 6.6V4h3.5zM5 6v.6a3 3 0 0 0 1.6 2.6A9 9 0 0 1 6.5 6zm12.5 0c0 1.1 0 2.2-.1 3.2A3 3 0 0 0 19 6.6V6z"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M10 2l2 6.2 6.2 2L12 12.3 10 18.5l-2-6.2L1.8 10.2 8 8.2z"/><path d="M18.5 13l1.1 3.1 3.1 1.1-3.1 1.1-1.1 3.1-1.1-3.1-3.1-1.1 3.1-1.1z"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.5 1.5 3.5 14h7l-1.5 8.5 11-13.3h-7.2z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><path d="m6.5 12.3 3.6 3.6 7.4-7.6" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><path d="m8 8 8 8m0-8-8 8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M12 1.8a7.2 7.2 0 0 1 4.2 13V17H7.8v-2.2A7.2 7.2 0 0 1 12 1.8zM8.6 18.6h6.8v1.6a1.8 1.8 0 0 1-1.8 1.8h-3.2a1.8 1.8 0 0 1-1.8-1.8z"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.6A9 9 0 1 1 9.4 3.5a7.3 7.3 0 0 0 11.1 11.1z"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 0 1 7.6 4.7l1.4-1.4V12h-5.2l2-2A6 6 0 1 0 18 14.8l2.4.7A8.5 8.5 0 1 1 12 3.5z"/></symbol>
+<symbol id="i-dice" viewBox="0 0 24 24"><rect x="2.5" y="2.5" width="19" height="19" rx="5"/><g fill="#fff"><circle cx="8" cy="8" r="1.8"/><circle cx="16" cy="8" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="8" cy="16" r="1.8"/><circle cx="16" cy="16" r="1.8"/></g></symbol>
+</svg><header><div class="wrap top"><a class="wordmark" href="#" style="text-decoration:none">notification lab</a><div class="progress" role="progressbar" aria-label="Mission progress" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span id="progress"></span></div><span class="streak" title="Missions reviewed"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg><span id="progress-label">0 / 3 reviewed</span></span><button id="theme" aria-label="Toggle color theme">Theme</button></div></header>
+<main class="wrap"><div class="hero"><div><div class="meta">CMU · Generative AI Lab · Fall 2026 · 40 minutes</div><h1>Which reminder should we send next?</h1><p>We have real Duolingo logs, Gemma to help with code, and a launch decision to make. We’ll check the evidence before choosing what to try next.</p><a href="#winner" class="button primary">Start mission 1</a></div><div class="phone" aria-label="Illustration of an anonymous notification"><div class="phone-top"></div><div class="notice"><div class="push"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg><span>Practice reminder · now</span></div><div class="bell" aria-hidden="true"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg></div><small>Practice reminder · historical data</small><strong>A practice reminder</strong><p class="muted" style="font-size:15px;margin:10px 0">See published message examples below, then inspect what one logged send actually contains.</p></div><div class="outcome"><span class="dot"></span><span>Did a lesson finish<br>within two hours?</span></div></div></div>
+<nav class="path" aria-label="Lab missions"><a href="#winner"><div class="number"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg></div><b>Check the winner</b><span>Make the comparison fair.</span></a><a href="#prediction"><div class="number n2"><svg class="ic" aria-hidden="true"><use href="#i-chart"/></svg></div><b>Improve the prediction</b><span>Train a model. Challenge JEV.</span></a><a href="#launch"><div class="number n3"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg></div><b>Challenge the launch</b><span>Ask what happens on later data.</span></a></nav>
+<section id="consumer"><h2>What does the learner actually see?</h2><p>The paper publishes real message examples. These cards reproduce that wording; they are teaching cards rather than screenshots of the app.</p><div class="grid space" id="published-messages"></div><div class="tip"><svg class="ic" aria-hidden="true"><use href="#i-bulb"/></svg><p id="message-boundary" style="margin:0"></p></div><p><a href="https://research.duolingo.com/papers/yancey.kdd20.pdf">Original examples: Yancey &amp; Settles, Table 1</a></p><details><summary>Inside one authentic notification record</summary><p class="space">This is a real row with an English UI setting. That setting does not identify the language being learned. The sent message itself cannot be recovered.</p><div class="table-scroll"><table><thead><tr><th>Released field</th><th>Actual value</th><th>What it means</th></tr></thead><tbody id="authentic-row"></tbody></table></div></details></section>
+<div class="panel"><h3>Real sends. A clearly defined outcome.</h3><p id="data-summary"></p><div class="flow"><span>Ask Gemma</span><b>→</b><span>Read the code</span><b>→</b><span>Run & check</span><b>→</b><span>Decide</span></div><details><summary>What one row tells you</summary><p class="space">One notification, anonymous eligible template IDs, the selected template, UI language, relative UTC time, previous sends, and whether a lesson finished within two hours. A–L are IDs; no message text or user IDs are released.</p><pre id="row-example"></pre><p class="muted">No no-send control, local timezone, revenue, or long-term retention outcome. The samples cover two selected archives; representativeness of the full release is unknown.</p></details></div>
+<section id="winner"><div class="intro"><div class="number"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg></div><h2>Should we pick the highest bar?</h2><p>Template A has a strong raw completion rate. Before recommending it, check who could receive it. The logging policy selected randomly within each notification’s eligible set.</p><p><b>And template C, the tallest bar?</b> In the earlier logs C was sent only when it was the <em>only</em> eligible template. Nobody chose C over anything, so its bar describes a special group of learners.</p></div><div class="grid"><div class="panel"><h3>Same templates. Different comparison.</h3><div class="mode" aria-label="Comparison mode"><button id="raw" aria-pressed="true">All sends</button><button id="shared" aria-pressed="false">Both A & G eligible</button></div><div id="bars" aria-label="Template completion rates"></div><p id="comparison-note" class="muted space"></p></div><div class="panel blue"><h3>Ask Gemma to write the check</h3><pre>Compare A and G where both were eligible.
+Keep rows where A or G was sent.
+Show counts, completion rates, and uncertainty.</pre><p>The recorded answer ran, but returned an empty table. Gemma used a string method on a list-valued column.</p><pre># Check membership inside each list
+shared = df.eligible_templates.map(
+  lambda choices:
+    "A" in choices and "G" in choices
+)</pre><p class="muted">Read the filter. Inspect the counts. A successful execution can still produce the wrong analysis.</p></div></div><div class="result" id="pair-result"></div><div class="quiz"><h3>What can we conclude?</h3><button data-mission="winner" data-answer="wrong">A is best because its raw rate is higher.</button><button data-mission="winner" data-answer="right">Use the shared-eligibility result and its interval.</button><div class="feedback" id="winner-feedback" role="status"></div></div><div class="tip"><svg class="ic" aria-hidden="true"><use href="#i-bulb"/></svg><span>Tried several pairs? Report how many. User IDs were removed, so row-level intervals cannot account for repeated learners. The notebook also shows an adjusted regression; its coefficients remain descriptive.</span></div></section>
+<section id="prediction"><div class="intro"><div class="number n2"><svg class="ic" aria-hidden="true"><use href="#i-chart"/></svg></div><h2>Can JEV beat a model we train?</h2><p>Predict two-hour lesson completion for the notification that was sent. XGBoost and CatBoost learn from earlier labels. JEV reads pre-send features without labeled examples. Everyone faces the same fixed later-period sample.</p></div><div class="duo2"><div class="ai-card gemma"><h3><span class="badge-ic"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg></span>Gemma · a regular LLM</h3><p>Writes <b>text</b>. We ask in plain English and it answers with code or an explanation.</p><pre>shared = df[df.eligible_templates
+    .str.contains("A")]   # runs, but wrong</pre><ul><li>Job here: write pandas code for us</li><li>Our check: read the code, run it, inspect counts</li></ul></div><div class="ai-card jev"><h3><span class="badge-ic"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg></span>JEV · a judgment model</h3><p>Returns a <b>number</b>. We give it one record and a question; it answers with a probability, a rating level, or a category.</p><pre>Q: Did this reviewer give 1–2 stars?
+→ Noul probability: <span id="jev-demo-p">0.03</span></pre><ul><li>Job here: predict the outcome for every row</li><li>Our check: AUC and Brier on the same held-out rows as XGBoost</li></ul></div></div><div class="tip"><svg class="ic" aria-hidden="true"><use href="#i-bulb"/></svg><span>You could ask Gemma to reply “0.7”, but that number is text it chose to write, so we would parse it and check its calibration ourselves. JEV hands back the probability as a field, so we can score it next to XGBoost directly. Neither one saw a training label for these tasks.</span></div><div class="grid space"><div class="panel"><h3>Choose a feature to inspect</h3><label for="feature">What would you give the model?</label><select id="feature"><option value="history">Previous sends and their age</option><option value="eligible">Eligible template IDs</option><option value="utc">Hour derived from UTC time</option><option value="label">Two-hour completion outcome</option></select><div class="result" id="feature-note" role="status"></div><p class="muted">The notebook lets you train XGBoost with base features or add smoothed template/language rates. The rates are learned out of fold inside the training period.</p></div><div class="panel blue"><h3>Vote before the reveal</h3><p>Which approach will rank future completions best?</p><div class="mode" id="model-votes"><button class="pick" aria-pressed="false">XGBoost</button><button class="pick" aria-pressed="false">CatBoost</button><button class="pick" aria-pressed="false">JEV</button></div><button class="primary" id="reveal">Reveal measured results</button><p class="muted space">JEV predictions were run by the TA. Students need no TypeSafe key. Anonymous IDs carry no message meaning.</p></div></div><div class="reveal space" id="showdown" hidden><div class="panel"><h3 id="showdown-title"></h3><div class="table-scroll"><table><thead><tr><th>Model</th><th>ROC AUC ↑</th><th>Avg. precision ↑</th><th>Brier ↓</th></tr></thead><tbody id="metrics"></tbody></table></div><p class="muted space" id="auc-difference"></p><p class="muted" id="cost"></p><details><summary>Interpret these scores</summary><p class="space">AUC measures ranking; 0.5 is chance. Compare average precision with the positive rate. Brier measures probability error. A constant training-rate predictor is a useful baseline.</p><p>JEV sees base pre-send features; engineered models also learn rates from training labels. No prompt or hyperparameter was selected using test labels. The interval uses a paired row bootstrap, so learner-level dependence is unaccounted for. Runtime comes from one CPU/API run.</p></details></div></div><div class="panel space" id="semantic-pilot"><h3>What changes when we give JEV the text?</h3><p>A separate corpus contains actual Duolingo app reviews. From text alone, infer whether a reviewer gave 1–2 stars, or estimate their rating on a five-level scale. Rating metadata is hidden from every model's test input. These reviews are not linked to the notification sends.</p><div class="result"><h3>One actual held-out review</h3><p id="review-excerpt"></p><p class="muted" id="review-example-result"></p><small>The excerpt shows the first 20 words of the first selected test review. JEV read the full text. Choice topic labels have not been independently checked.</small></div><div class="table-scroll"><table><thead><tr><th>Approach</th><th>Training labels</th><th>Low-rating AUC ↑</th><th>Brier ↓</th></tr></thead><tbody id="review-metrics"></tbody></table></div><p id="review-comparison" class="result"></p><div class="table-scroll"><table><thead><tr><th>Rating estimator</th><th>Training labels</th><th>Mean absolute error ↓</th></tr></thead><tbody id="rating-metrics"></tbody></table></div><p class="muted space" id="review-cost"></p><p class="tip">Pilot evidence: one fixed later-period sample of 500 reviews. Stars are a noisy sentiment proxy. Public text may have appeared in pretraining. These text baselines are not a tuned state of the art. This result does not measure notification lift, review-topic accuracy, or long-term retention.</p><p><a href="https://www.kaggle.com/datasets/ganangsetyohadi/duolingo-google-play-reviews">Source: Ganang Setyohadi, Duolingo Google Play Reviews</a> · scraped April 2025 · publisher declares MIT.</p><details><summary>Which JEV feature fits which job?</summary><div class="table-scroll space"><table><thead><tr><th>Primitive</th><th>Output</th><th>Suitable job</th><th>Measured here?</th></tr></thead><tbody id="capability-map"></tbody></table></div><p class="space">Several independent questions can share one request. Code can combine scores or request human review; these are compositions, not extra primitives. Score confidence summarizes its distribution and is not a probability that the answer is correct.</p></details><div class="result"><b>Conclusion for these two tasks</b><br>Trained classic ML wins on the anonymous behavioral logs. JEV wins this review-text pilot with zero task-specific training labels. The useful question is what evidence the input gives each method.</div></div>
+<div class="quiz"><h3>A model predicts completion well. What follows?</h3><button data-mission="prediction" data-answer="wrong">Its favorite template must cause more completions.</button><button data-mission="prediction" data-answer="right">We still need evidence for a template-selection policy.</button><div class="feedback" id="prediction-feedback" role="status"></div></div></section>
+<section id="launch"><div class="intro"><div class="number n3"><svg class="ic" aria-hidden="true"><use href="#i-rocket"/></svg></div><h2>The proposal meets later data.</h2><p>Freeze a simple policy: for each send, select the highest estimated language/template rate among eligible options. This maximizes a one-round objective with exactly one eligible template per send. The estimates may still favor the wrong option.</p></div><div class="grid"><div class="panel"><h3>Only one outcome is observed</h3><div class="flow"><span>Eligible A, G, L</span><b>→</b><span>Log sent G</span></div><p>A proposal that selects A has no observed A outcome for this send. Offline evaluation uses rows where the proposal matches the log, weighted by the inverse logging probability.</p><div class="result">If 3 templates were eligible, a matching row gets weight 3.</div><p class="muted">The score estimates one-step value under historical logged contexts. Repeated deployment changes notification history.</p></div><div class="panel blue"><h3>Frozen policy, future-period check</h3><div id="policy-result"></div><p class="muted" id="policy-support"></p><details><summary>Why two offline estimates?</summary><p class="space">IPS divides weighted successes by all sends. SNIPS divides by the sum of weights. Both use known uniform logging probabilities. Effective sample size shows how concentrated the weights are; it is not a count of unique learners.</p></details></div></div><div class="panel space"><h3>The promise shrinks every time we check honestly</h3><p class="muted">Same frozen policy. Gap = policy minus random sends, in percentage points.</p><div class="ladder" id="ladder"></div><div class="result">Picking the highest estimate tends to pick the luckiest estimate. The rate table looked great on the data it was built from.</div></div>
+<div class="panel space"><h3>Why were the logs random? Duolingo runs a bandit.</h3><p>A bandit keeps sending a mix of templates so it keeps learning which one works. The paper names two twists.</p><div class="bandit"><div><svg class="ic" aria-hidden="true"><use href="#i-moon"/></svg><b>Sleeping</b><span class="muted">Some templates are unavailable for some sends.</span></div><div><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg><b>Recovering</b><span class="muted">A template regains novelty as days pass since a learner last saw it.</span></div><div><svg class="ic" aria-hidden="true"><use href="#i-dice"/></svg><b>Random logs</b><span class="muted">The released sends were picked randomly within each eligible set. That is what makes IPS possible.</span></div></div></div><div class="panel space"><h3>Keep watching the outcome</h3><svg id="daily" viewBox="0 0 750 210" role="img" aria-label="Later-period daily two-hour completion rate" class="chart"></svg><p class="muted">These are real later-period aggregates. A change suggests a question to investigate. The dataset has no outage labels or delivery diagnostics.</p></div><div class="quiz"><h3>What should the launch recommendation include?</h3><button data-mission="launch" data-answer="wrong">A guaranteed retention lift over sending nothing.</button><button data-mission="launch" data-answer="right">The offline estimate, uncertainty, and a controlled next experiment.</button><div class="feedback" id="launch-feedback" role="status"></div></div></section>
+<section id="challenge"><div class="number n4"><svg class="ic" aria-hidden="true"><use href="#i-trophy"/></svg></div><h2>Your six-minute challenge</h2><p>Choose a mission, then write your own Gemma prompt in the notebook. Produce one table or chart, one decision, and one limitation.</p><div class="grid space"><div class="panel"><label for="mission-choice">Choose your mission</label><select id="mission-choice"><option value="winner">Check the winner</option><option value="prediction">Improve the prediction</option><option value="launch">Challenge the launch</option></select><p class="result" id="challenge-prompt"></p><p class="muted">Custom prompts need a live Gemini key. With no key, the notebook clearly labels the recorded mission example.</p></div><div class="panel"><h3>Before you share</h3><div class="checks"><label><input type="checkbox"><span>I defined the row, outcome, and comparison.</span></label><label><input type="checkbox"><span>I inspected the generated code and the resulting counts.</span></label><label><input type="checkbox"><span>I separated prediction from policy evidence.</span></label><label><input type="checkbox"><span>I stated uncertainty and what the data cannot show.</span></label></div></div></div><div class="cta"><h3>Post your recommendation in chat.</h3><p>“We recommend ____. Our evidence is ____. We would change our mind if ____.”</p><p class="muted" style="margin:0">We’ll use the code to check our idea, then explain what we would do next.</p></div></section>
+<section><h3>Sources & boundaries</h3><p class="disclaim">Unofficial teaching page for a CMU course. Not affiliated with or endorsed by Duolingo. Icons are original drawings.</p><p>Kevin Yancey & Burr Settles (2020), <a href="https://doi.org/10.1145/3394486.3403351">A Sleeping, Recovering Bandit Algorithm for Optimizing Recurring Notifications</a>. <a href="https://doi.org/10.7910/DVN/23ZWVI">Harvard Dataverse replication data, V1</a>, CC BY-NC 4.0. Samples preserve original fields; no synthetic observations.</p><details><summary>Sampling and evaluation limitations</summary><ul id="limitations"></ul></details><p class="muted space">An independent teaching companion prepared by Rizaldy Utomo. Inspired by playful learning interfaces; this is not a Duolingo product. All interactions run locally in your browser. Fonts load from Google Fonts.</p></section></main><footer class="wrap">Generative AI Lab · Fall 2026 · Friday 13 November</footer>
+<script src="bundle.js?v=20261111"></script><script>
+'use strict';
+const D=window.LAB,$=id=>document.getElementById(id),pct=x=>(100*x).toFixed(1)+'%',pp=x=>(100*x).toFixed(2)+' pp',names={base_rate:'Constant training rate',xgboost:'XGBoost · base features',xgboost_engineered:'XGBoost · engineered',catboost:'CatBoost · engineered',jev:'JEV · zero-shot'};
+const messages=D.published_messages;messages.examples.forEach(item=>{const card=document.createElement('article');card.className='panel';const tag=document.createElement('small');tag.className='muted';tag.textContent=item.name+' · published example';const title=document.createElement('h3');title.textContent=item.title;const body=document.createElement('p');body.textContent=item.body;const eligibility=document.createElement('p');eligibility.className='muted';eligibility.textContent=item.eligibility;card.append(tag,title,body,eligibility);$('published-messages').append(card)});$('message-boundary').textContent=messages.warning;
+const meanings={datetime:'Relative UTC days at sending',ui_language:'Interface language, not learning language',eligible_templates:'Anonymous choices available on this send',selected_template:'Anonymous ID sent; exact wording unavailable',history:'Previous template IDs and days since each send',session_end_completed:'Observed lesson completion within two hours'};Object.entries(D.authentic_row).forEach(([key,value])=>{const tr=document.createElement('tr');[key,typeof value==='object'?JSON.stringify(value):String(value),meanings[key]].forEach(t=>{const td=document.createElement('td');td.style.overflowWrap='anywhere';td.textContent=t;tr.append(td)});$('authentic-row').append(tr)});
+const E=D.review_example;$('jev-demo-p').textContent=E.noul.toFixed(2);$('review-excerpt').textContent='“'+E.excerpt+'…”';$('review-example-result').textContent='Actual rating: '+E.stars+' stars. JEV Noul low-rating probability: '+E.noul.toFixed(2)+'. JEV Score estimate: '+E.score_stars.toFixed(2)+' stars. Choice topic: '+E.topic.replaceAll('_',' ')+'.';
+const R=D.review_pilot,reviewNames={jev_noul:'JEV Noul',jev_score_low_mass:'JEV Score · mass on 1–2 stars',tfidf_svd_xgboost:'TF-IDF + SVD + XGBoost'};R.binary_metrics.forEach(m=>{const tr=document.createElement('tr');[reviewNames[m.model]||'TF-IDF + logistic regression',m.training_labels.toLocaleString(),m.roc_auc.toFixed(3),m.brier.toFixed(3)].forEach(t=>{const td=document.createElement('td');td.textContent=t;tr.append(td)});$('review-metrics').append(tr)});const ordinalNames={constant_train_mean:'Constant training mean',tfidf_ridge:'TF-IDF + Ridge',jev_score:'JEV Score'};R.ordinal_metrics.forEach(m=>{const tr=document.createElement('tr');[ordinalNames[m.model],m.training_labels.toLocaleString(),m.star_mae.toFixed(3)+' stars'].forEach(t=>{const td=document.createElement('td');td.textContent=t;tr.append(td)});$('rating-metrics').append(tr)});const rd=R.paired_auc_difference_jev_minus_full_logreg;$('review-comparison').textContent='JEV Noul minus full-label text baseline AUC: '+rd.estimate.toFixed(3)+'; paired 95% row-bootstrap interval '+rd.ci_low.toFixed(3)+' to '+rd.ci_high.toFixed(3)+'. JEV Score uses the probability mass on the 1- and 2-star levels for the binary task; its expected star rating is evaluated separately with MAE.';$('review-cost').textContent=R.test_rows+' fixed test reviews; '+R.train_rows.toLocaleString()+' earlier training reviews; '+R.input_tokens.toLocaleString()+' JEV input tokens across Noul, Score, and Choice; estimated API cost $'+R.estimated_cost_usd.toFixed(3)+'.';D.jev_capabilities.primitives.forEach(p=>{const tr=document.createElement('tr');[p.name,p.returns,p.fit,p.lab_evidence].forEach(t=>{const td=document.createElement('td');td.textContent=t;tr.append(td)});$('capability-map').append(tr)});
+$('data-summary').textContent=D.train_rows.toLocaleString()+' earlier sends to learn from. '+D.test_rows.toLocaleString()+' later sends for evaluation. '+pct(D.test_rate)+' of later sends were followed by a lesson completed within two hours. Earlier completion rate: '+pct(D.train_rate)+'. This difference may reflect time and archive composition; it is not a measured campaign lift.';
+$('row-example').textContent=JSON.stringify(D.example,null,2);
+function bars(shared){const rows=shared?D.pair_table:D.templates;$('bars').replaceChildren();rows.forEach(r=>{const row=document.createElement('div');row.className='bar-row';const arm=document.createElement('b');arm.textContent=r.selected_template;const track=document.createElement('div');track.className='bar-track';const fill=document.createElement('div');fill.className='bar-fill';if(!shared&&r.selected_template==='C'){fill.style.background='var(--orange)';fill.style.boxShadow='inset 0 -4px 0 var(--orange-dark)';const t=document.createElement('span');t.className='only-tag';t.textContent='only option';arm.append(t)}fill.style.width=(r.rate/.45*100)+'%';track.append(fill);const value=document.createElement('span');value.className='bar-value';value.textContent=pct(r.rate);const count=document.createElement('small');count.style.display='block';count.textContent='n='+r.n.toLocaleString();value.append(count);row.append(arm,track,value);row.title=r.n.toLocaleString()+' sends';$('bars').append(row)});$('comparison-note').textContent=shared?'Both A and G were eligible. Only A/G selections remain: '+rows.map(r=>r.selected_template+' n='+r.n.toLocaleString()).join('; ')+'.':'Raw rates mix different eligible populations. C was the only option in '+Math.round(100*D.solo_c.share_alone)+'% of its '+D.solo_c.n.toLocaleString()+' sends ('+pct(D.solo_c.share_of_sends)+' of all sends), so its bar involves no choice. Each count is the number of sends.';$('raw').setAttribute('aria-pressed',String(!shared));$('shared').setAttribute('aria-pressed',String(shared))}
+$('raw').onclick=()=>bars(false);$('shared').onclick=()=>bars(true);bars(false);
+$('pair-result').textContent='Shared-eligibility difference, A minus G: '+pp(D.pair.difference)+'. Approximate 95% interval: '+pp(D.pair.ci_low)+' to '+pp(D.pair.ci_high)+'. This is an exploratory row-level comparison.';
+const featureNotes={history:'Available before sending. A previous send is an exposure, not evidence that the learner completed a lesson.',eligible:'Available before sending. Eligibility can carry learner information, so a raw template ranking can be misleading.',utc:'Available before sending. Fractional UTC time gives a global hour; it does not identify each learner’s local hour.',label:'Outcome leakage. This is measured after sending and is the very thing we are trying to predict.'};
+$('feature').onchange=()=>{$('feature-note').textContent=featureNotes[$('feature').value]};$('feature').onchange();
+document.querySelectorAll('.pick').forEach(b=>b.onclick=()=>{document.querySelectorAll('.pick').forEach(a=>a.setAttribute('aria-pressed',String(a===b)))});
+$('reveal').onclick=()=>{$('showdown').hidden=false;$('reveal').textContent='Results revealed';$('reveal').disabled=true};
+$('showdown-title').textContent=D.showdown_rows.toLocaleString()+' identical test notifications · '+pct(D.showdown_rate)+' completed';
+D.metrics.forEach(m=>{const row=document.createElement('tr');[names[m.model],m['ROC AUC'].toFixed(3),m['PR AUC (AP)'].toFixed(3),m['Brier (lower better)'].toFixed(3)].forEach(t=>{const cell=document.createElement('td');cell.textContent=t;row.append(cell)});$('metrics').append(row)});
+const diff=D.auc_difference_xgb_minus_jev;$('auc-difference').textContent='Engineered XGBoost minus JEV AUC: '+diff.estimate.toFixed(3)+'; paired 95% row-bootstrap interval '+diff.ci_low.toFixed(3)+' to '+diff.ci_high.toFixed(3)+'.';
+const jt=D.timing.jev;$('cost').textContent=D.model+' · '+jt.input_tokens.toLocaleString()+' input tokens · estimated API cost $'+jt.estimated_cost_usd.toFixed(3)+'. Sum of recorded request times '+jt.sum_request_seconds_recorded.toFixed(1)+' s (requests overlap). XGBoost fit '+D.timing.xgboost_engineered.fit_seconds.toFixed(1)+' s; prediction '+D.timing.xgboost_engineered.predict_seconds.toFixed(2)+' s. Single local run; no controlled speed comparison.';
+(function(){const L=D.policy_ladder,m=Math.max(...L.map(r=>Math.abs(r.gap_pp)))*1.15;L.forEach(r=>{const row=document.createElement('div');row.className='rung';const lab=document.createElement('div');lab.textContent=r.check;const sm=document.createElement('small');sm.textContent='policy '+pct(r.policy)+' vs random '+pct(r.random_sends);lab.append(sm);const tr=document.createElement('div');tr.className='track';const f=document.createElement('div');f.className='fill '+(r.gap_pp>=0?'up':'down');f.style.width=(Math.abs(r.gap_pp)/m*50)+'%';const z=document.createElement('div');z.className='zero';tr.append(f,z);const v=document.createElement('b');v.className='val';v.textContent=(r.gap_pp>0?'+':'')+r.gap_pp.toFixed(1)+' pp';v.style.color=r.gap_pp>=0?'var(--green-dark)':'var(--red2)';row.append(lab,tr,v);$('ladder').append(row)})})();
+const p=D.policy;$('policy-result').innerHTML='<p>Logged random policy: <b>'+pct(p.logged_random_rate)+'</b></p><p>Frozen proposal IPS: <b>'+pct(p.policy_ips)+'</b><br>SNIPS: <b>'+pct(p.policy_snips)+'</b></p><div class="result">IPS difference: <b>'+pp(p.difference)+'</b><br>Approx. 95% interval: '+pp(p.difference_ci_low)+' to '+pp(p.difference_ci_high)+'</div>';$('policy-support').textContent=p.matching_rows.toLocaleString()+' matching sends out of '+p.n.toLocaleString()+'. Effective sample size '+Math.round(p.effective_sample_size).toLocaleString()+'. Interval assumes independent rows.';
+function daily(){const rows=D.daily,svg=$('daily'),ns='http://www.w3.org/2000/svg';const xmax=Math.max(...rows.map(r=>r.day)),xmin=Math.min(...rows.map(r=>r.day)),ymax=Math.max(...rows.map(r=>r.rate))*1.2;function el(tag,attrs,text){const n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text)n.textContent=text;svg.append(n);return n}for(let i=0;i<=3;i++){let y=170-i*48;el('line',{x1:45,y1:y,x2:725,y2:y,stroke:'var(--line)'});el('text',{x:2,y:y+4},pct(ymax*i/3))}const x=r=>45+(r.day-xmin)/(xmax-xmin)*680,y=r=>170-r.rate/ymax*144;el('polyline',{points:rows.map(r=>x(r)+','+y(r)).join(' '),fill:'none',stroke:'var(--blue)','stroke-width':3});rows.forEach(r=>{const dot=el('circle',{cx:x(r),cy:y(r),r:4,fill:'var(--blue)'});const title=document.createElementNS(ns,'title');title.textContent='Day '+r.day+': '+pct(r.rate)+', n='+r.n;dot.append(title)});el('text',{x:45,y:203},'Relative day '+xmin);el('text',{x:620,y:203},'Day '+xmax)}daily();
+const done=new Set();const feedback={winner:'The shared-eligibility filter changes the comparison. Include the interval and the limits from repeated learners and multiple testing.',prediction:'Ranking the observed outcome does not identify the causal effect of choosing a different template. Check a frozen policy separately.',launch:'Report the offline result and uncertainty, then propose a controlled experiment. No no-send arm or long-term retention outcome is available.'};
+document.querySelectorAll('[data-mission]').forEach(b=>b.onclick=()=>{const m=b.dataset.mission,correct=b.dataset.answer==='right',f=$(m+'-feedback');f.className='feedback show '+(correct?'correct':'retry');f.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-'+(correct?'check':'x')+'"/></svg>';const ft=document.createElement('span');ft.innerHTML='<b>'+(correct?'Nice!':'Not quite.')+'</b> ';ft.append(feedback[m]);f.append(ft);if(correct)done.add(m);$('progress').style.width=done.size/3*100+'%';$('progress-label').textContent=done.size+' / 3 reviewed';document.querySelector('[role=progressbar]').setAttribute('aria-valuenow',String(done.size))});
+const prompts={winner:'Ask Gemma to compare another template pair within shared eligibility. Check sample sizes and disclose every pair you tried.',prediction:'Ask Gemma for one feature hypothesis using only pre-send information. Fit on the earlier period; reserve validation data before tuning.',launch:'Ask Gemma what evidence would challenge the proposed policy. Examine support, day-to-day variation, or the consequences of repeated sending.'};$('mission-choice').onchange=()=>{$('challenge-prompt').textContent=prompts[$('mission-choice').value]};$('mission-choice').onchange();D.limitations.forEach(t=>{const li=document.createElement('li');li.textContent=t;$('limitations').append(li)});
+$('theme').onclick=()=>{const dark=document.documentElement.dataset.theme?document.documentElement.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.dataset.theme=dark?'light':'dark'};
+</script></body></html>

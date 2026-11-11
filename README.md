@@ -1,12 +1,15 @@
-# Lab 03 companion · The memo that promised $32k
+# Notification Lab · AI for Data Science
 
-Interactive companion for Lab 03 (AI for Data Science) of the Generative AI Lab, Fall 2026.
-An AI wrote a marketing memo from a real email experiment; students review it claim by claim.
+Interactive companion for the Generative AI Lab, Fall 2026, prepared by Rizaldy Utomo.
+Three missions using original Duolingo notification logs: check the winner, improve the prediction,
+and challenge the launch. Static page with precomputed results; no API keys or notebook files.
 
-Live page: https://rzrizaldy.github.io/cmu_f26_genai_lab03_ai4ds_companion/
+Data: Yancey & Settles (2020), Harvard Dataverse V1, https://doi.org/10.7910/DVN/23ZWVI .
+CC BY-NC 4.0, https://creativecommons.org/licenses/by-nc/4.0/ . Adaptation: aggregate results from
+uniform samples of train-part-3 and test-part-2, preserving original fields. No synthetic observations.
+Paper: https://doi.org/10.1145/3394486.3403351 .
+Separate review-text pilot: https://www.kaggle.com/datasets/ganangsetyohadi/duolingo-google-play-reviews
+(Ganang Setyohadi, April 2025 scrape, publisher-declared MIT). Only aggregate metrics and a short
+review excerpt are included. Published paper messages cannot be mapped to anonymous A-L log IDs.
 
-Everything runs in the browser from `bundle.js`; nothing is sent anywhere.
-
-Data: Kevin Hillstrom, MineThatData E-Mail Analytics Challenge (2008) · Women's E-Commerce Clothing Reviews
-(Kaggle, CC0, used for aggregate results only) · the launch-day website data is synthetic.
-Prepared by Rizaldy Utomo (TA).
+Unofficial teaching page; not affiliated with or endorsed by Duolingo. Icons are original drawings.
