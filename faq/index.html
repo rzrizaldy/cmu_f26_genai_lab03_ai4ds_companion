@@ -48,8 +48,19 @@
 <p>C has the highest raw rate (about 40%), but in the earlier logs C was sent <strong>only</strong> when it was the single option a learner could get (575 sends, 1.4% of all sends). Nobody chose C over anything else, so its bar describes a special group of learners. It doesn't show that C works better.</p>
 <h3 id="why-do-we-compare-a-and-g-only-where-both-were-possible">Why do we compare A and G only where both were possible?</h3>
 <p>Duolingo picked at random <strong>among the reminders each learner was eligible for</strong>. Different templates reach different people, so raw rates mix up "which message" with "which learner". If we keep only sends where both A and G were on the table, the coin flip between them is fair. In that fair view, A gets 19.7% and G gets 22.7%. The gap is −3.0 points, but the 95% interval runs from −6.1 to +0.1, so there's no clear winner yet.</p>
+<h3 id="how-should-i-write-a-prompt-for-code">How should I write a prompt for code?</h3>
+<p>Brief Gemma like a new teammate who can't see the data. Every prompt in the notebook has five parts:</p>
+<ul>
+<li><strong>GOAL:</strong> the question in one line.</li>
+<li><strong>DATA:</strong> the columns it needs, with their <strong>types</strong> (for example, "<code>eligible_templates</code> is an array of strings, not a string").</li>
+<li><strong>STEPS:</strong> the analysis, in order.</li>
+<li><strong>CONSTRAINTS:</strong> libraries, no leakage, don't change <code>df</code>, no causal claims.</li>
+<li><strong>OUTPUT:</strong> the exact table or chart you want.</li>
+</ul>
+<p>Then read the code before you run it, and check the result makes sense.</p>
 <h3 id="gemmas-code-ran-fine-what-was-wrong-with-it">Gemma's code ran fine. What was wrong with it?</h3>
-<p>It used <code>.str.contains("A")</code> on a column that holds <strong>lists</strong>, so it matched nothing and quietly returned an empty table. No error, no warning. Code that runs isn't automatically code that's right. We read the filter and check the counts every time.</p>
+<p>With our first, short prompt it used <code>.str.contains("A")</code> on a column that holds <strong>arrays</strong>, so it matched nothing and quietly returned an empty table. No error, no warning. When the prompt said the column type and banned <code>.str</code> methods, Gemma wrote a correct membership check.</p>
+<p>In Mission 2 it slipped again: it counted earlier reminders with <code>isinstance(x, list)</code>, but the column holds NumPy arrays, so every learner got 0. The summary showed a standard deviation of 0, which is the clue: <strong>a feature that never changes is a red flag.</strong> Code that runs isn't automatically code that's right, so we read it and check the numbers every time.</p>
 <h3 id="why-does-jev-lose-on-the-send-logs-but-win-on-the-reviews">Why does Jev lose on the send logs but win on the reviews?</h3>
 <p>Our rule of thumb: <strong>could a person answer from one row?</strong></p>
 <ul>

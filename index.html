@@ -242,12 +242,16 @@ table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px 8px;b
 
 <section class="slide m1" id="winner-gemma" data-label="M1 · Gemma's bug"><div class="inner">
 <div class="kicker a"><span class="dot"><svg class="ic"><use href="#i-target"/></svg></span>Mission 1 · Check the winner</div>
-<h2 class="a">Gemma’s code ran. The answer was wrong.</h2>
-<div class="grid2 a"><div class="card soft"><h3>We asked</h3><pre>Compare A and G where both were eligible.
-Show counts, rates, and uncertainty.</pre><h3>Gemma wrote</h3><pre>df[df.eligible_templates.str.contains("A")]
+<h2 class="a">Gemma’s code ran. The answer was wrong. Then we fixed the prompt.</h2>
+<div class="grid2 a"><div class="card soft"><h3>First try: a short prompt</h3><pre>For templates A and G, retain rows where
+both are eligible…</pre><h3>Gemma wrote</h3><pre>df['eligible_templates'].str.contains('A')
 # → empty table, no error</pre></div>
-<div class="card"><h3>The fix: check list membership</h3><pre>shared = df.eligible_templates.map(
-  lambda c: "A" in c and "G" in c)</pre><p>Running isn’t the same as right. We read the filter, then we check the counts.</p></div></div>
+<div class="card"><h3>Better prompt: say the type</h3><pre>DATA: eligible_templates is an array of
+strings, e.g. ['A','G','L']. NOT a string.
+CONSTRAINTS: no .str methods on it.</pre><h3>Gemma wrote</h3><pre>df['eligible_templates'].apply(
+  lambda x: 'A' in x and 'G' in x)
+# → A 19.7%, G 22.7% ✓ matches our check</pre></div></div>
+<p class="lead a" style="margin-top:12px">Running isn’t the same as right. A clear prompt (GOAL, DATA with types, STEPS, CONSTRAINTS, OUTPUT) got correct code, and we still checked it.</p>
 <div class="quiz a"><h3>What can we conclude?</h3><div class="opts"><button type="button" data-mission="winner" data-answer="wrong">A wins: its raw rate is higher</button><button type="button" data-mission="winner" data-answer="right">Use the fair comparison and its interval</button></div><div class="feedback" id="winner-feedback" role="status"></div></div>
 <details class="fine a"><summary>Fine print</summary><p>Tried several pairs? We say how many. Without user IDs, our interval can’t tell when the same learner shows up twice. The notebook’s regression describes patterns; it doesn’t prove cause.</p></details>
 </div></section>
